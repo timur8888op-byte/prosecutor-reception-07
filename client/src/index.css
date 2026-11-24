@@ -4108,3 +4108,88 @@ html, body, #root { width: 100%; min-width: 100%; min-height: 100%; height: 100%
   }
   .personnel-file-paper { min-height:0; }
 }
+
+
+/* Workday planning: prioritisation, time estimates and visible carry-over. */
+.day-plan-open-button {
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  min-height:36px; padding:9px 11px; color:#f0e4cf;
+  background:rgba(30,49,40,.92); border:1px solid rgba(198,155,97,.58);
+  font:600 9px 'IBM Plex Mono'; letter-spacing:.04em; cursor:pointer; transition:.18s ease;
+}
+.day-plan-open-button:hover { color:#fff4df; background:#405947; border-color:#d3b17b; transform:translateY(-1px); }
+.day-plan-overlay {
+  position:fixed; inset:0; z-index:11000; display:grid; place-items:center;
+  padding:22px; background:rgba(3,10,12,.8); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+}
+.day-plan-dialog {
+  width:min(820px,calc(100vw - 36px)); max-height:min(88dvh,900px); overflow:auto;
+  padding:28px 30px 22px; color:#e8e1d4; background:linear-gradient(145deg,rgba(15,30,25,.98),rgba(7,17,19,.98));
+  border:1px solid rgba(198,155,97,.48); box-shadow:0 28px 90px rgba(0,0,0,.58),inset 0 0 0 4px rgba(198,155,97,.045);
+}
+.day-plan-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:21px; }
+.day-plan-heading > div > span { color:#c69b61; font:9px 'IBM Plex Mono'; letter-spacing:.16em; }
+.day-plan-heading h2 { margin:8px 0 7px; color:#f2e8d5; font:500 clamp(26px,4vw,38px) Georgia,serif; letter-spacing:-.035em; }
+.day-plan-heading p { max-width:610px; margin:0; color:rgba(232,225,212,.62); font-size:12px; line-height:1.6; }
+.day-plan-heading > button { display:grid; place-items:center; flex:0 0 34px; width:34px; height:34px; color:#e7d6b8; background:rgba(255,255,255,.045); border:1px solid rgba(198,155,97,.3); cursor:pointer; }
+.day-plan-overview { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; }
+.day-plan-overview > div { display:flex; flex-direction:column; gap:7px; min-width:0; padding:12px 13px; background:rgba(255,255,255,.045); border:1px solid rgba(232,225,212,.11); }
+.day-plan-overview span { color:rgba(232,225,212,.52); font:8px 'IBM Plex Mono'; letter-spacing:.08em; }
+.day-plan-overview strong { color:#f0c575; font:600 19px 'IBM Plex Mono'; }
+.day-plan-overview .overbooked strong { color:#e88979; }
+.day-plan-hint { margin:12px 0 17px; color:rgba(232,225,212,.5); font-size:10px; line-height:1.55; }
+.day-plan-list { display:flex; flex-direction:column; gap:8px; padding:0; margin:0; list-style:none; }
+.day-plan-item { display:grid; grid-template-columns:66px minmax(0,1fr); gap:12px; padding:13px 14px; background:rgba(255,255,255,.035); border:1px solid rgba(232,225,212,.12); }
+.day-plan-item.current { border-color:rgba(198,155,97,.55); background:rgba(198,155,97,.08); }
+.day-plan-item.carried:not(.current) { border-left:3px solid #c08b52; }
+.day-plan-order { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.day-plan-order > span { color:#e4bd7e; font:600 18px 'IBM Plex Mono'; }
+.day-plan-order > div { display:flex; flex-direction:column; gap:4px; }
+.day-plan-order button { display:grid; place-items:center; width:28px; height:25px; color:#e5d8c2; background:rgba(255,255,255,.06); border:1px solid rgba(198,155,97,.25); cursor:pointer; }
+.day-plan-order button:hover:not(:disabled) { color:#fff; background:rgba(198,155,97,.2); }
+.day-plan-order button:disabled { opacity:.22; cursor:not-allowed; }
+.day-plan-case-title { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.day-plan-case-title strong { color:#f0e7d7; font-size:13px; line-height:1.4; }
+.day-plan-case-title > span { flex:0 0 auto; padding:4px 6px; font:8px 'IBM Plex Mono'; letter-spacing:.06em; }
+.day-plan-current-tag { color:#f0c575; background:rgba(198,155,97,.13); border:1px solid rgba(198,155,97,.3); }
+.day-plan-carry-tag { color:#e9b77a; background:rgba(185,115,57,.12); border:1px solid rgba(185,115,57,.27); }
+.day-plan-new-tag { color:#9eb7a0; background:rgba(116,157,122,.1); border:1px solid rgba(116,157,122,.22); }
+.day-plan-main > p { margin:5px 0 10px; color:rgba(232,225,212,.52); font-size:10px; }
+.day-plan-breakdown { display:flex; flex-wrap:wrap; gap:7px 15px; padding-top:9px; border-top:1px solid rgba(232,225,212,.1); }
+.day-plan-breakdown span { color:rgba(232,225,212,.56); font-size:9px; }
+.day-plan-breakdown b { margin-left:3px; color:#e6cfab; font:500 9px 'IBM Plex Mono'; }
+.day-plan-footer { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:17px; padding-top:15px; border-top:1px solid rgba(232,225,212,.15); }
+.day-plan-footer > span { color:rgba(232,225,212,.53); font:8px 'IBM Plex Mono'; letter-spacing:.04em; }
+.day-plan-footer > button { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; color:#f7eddb; background:#435b4b; border:1px solid #71836b; font:600 10px 'IBM Plex Mono'; cursor:pointer; }
+.day-plan-footer > button:hover { background:#526f5b; }
+.carryover-summary { margin:18px 0 22px; padding:15px 16px 12px; background:rgba(198,155,97,.07); border:1px solid rgba(198,155,97,.25); }
+.day-plan-carry-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.day-plan-carry-head > span { color:#e1bd83; font:9px 'IBM Plex Mono'; letter-spacing:.12em; }
+.day-plan-carry-head > b { color:rgba(232,225,212,.52); font:8px 'IBM Plex Mono'; }
+.carryover-summary > p { margin:8px 0 11px; color:rgba(232,225,212,.6); font-size:11px; line-height:1.5; }
+.carryover-summary ul { display:flex; flex-direction:column; gap:6px; padding:0; margin:0; list-style:none; }
+.carryover-summary li { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:8px 0; border-top:1px solid rgba(232,225,212,.1); }
+.carryover-summary li > span { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.carryover-summary li strong { color:#eee4d2; font-size:11px; }
+.carryover-summary li small { color:rgba(232,225,212,.48); font-size:9px; }
+.carryover-summary li > b { flex:0 0 auto; color:#d7aa70; font:8px 'IBM Plex Mono'; letter-spacing:.06em; }
+.reception-question small { margin-left:auto; color:#9c895f; font:8px 'IBM Plex Mono'; letter-spacing:.04em; }
+.reception-question:disabled { opacity:.42; cursor:not-allowed; }
+.material-tabs button:disabled { opacity:.45; cursor:not-allowed; }
+@media (max-width:900px) {
+  .day-plan-open-button { padding:8px; min-width:36px; font-size:0; gap:0; }
+  .day-plan-open-button svg { width:16px; height:16px; }
+}
+@media (max-width:680px) {
+  .day-plan-overlay { padding:8px; }
+  .day-plan-dialog { width:calc(100vw - 16px); max-height:92dvh; padding:20px 15px 15px; }
+  .day-plan-overview { grid-template-columns:1fr 1fr; }
+  .day-plan-overview > div:first-child { grid-column:1/-1; }
+  .day-plan-item { grid-template-columns:42px minmax(0,1fr); gap:8px; padding:10px 8px; }
+  .day-plan-case-title { flex-direction:column; gap:6px; }
+  .day-plan-breakdown { gap:6px 10px; }
+  .day-plan-footer { align-items:flex-start; flex-direction:column; }
+  .day-plan-footer > button { width:100%; justify-content:center; }
+  .carryover-summary { padding:12px 10px; }
+  .carryover-summary li { align-items:flex-start; flex-direction:column; gap:5px; }
+}
