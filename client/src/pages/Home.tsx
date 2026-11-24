@@ -690,6 +690,20 @@ export default function Home() {
     });
   }
 
+  const clearRegistryEntriesForReissue = (ids: string[]) => {
+    if (ids.length === 0) return;
+    setRegistryDecisions((current) => {
+      const next = { ...current };
+      ids.forEach((id) => { delete next[id]; });
+      return next;
+    });
+    setRegistryEntryMetadata((current) => {
+      const next = { ...current };
+      ids.forEach((id) => { delete next[id]; });
+      return next;
+    });
+  };
+
   const addRegistryEntryMetadata = (ids: string[], registeredDay: number) => {
     setRegistryEntryMetadata((current) => {
       let changed = false;
@@ -722,6 +736,7 @@ export default function Home() {
     if (nextLocation === "reception" && dailyComplaintIds.length === 0) {
       const pool = prosecutorOffice === "executive" && nextRightsAdvocateMode ? [...(PROFILE_COMPLAINTS.executive ?? []), ...advocateComplaints] : prosecutorOffice && PROFILE_COMPLAINTS[prosecutorOffice] ? PROFILE_COMPLAINTS[prosecutorOffice] : COMPLAINTS;
       const batch = drawDailyComplaintIds(pool, seenComplaintIds, carriedComplaintIds);
+      clearRegistryEntriesForReissue(batch.ids.filter((id) => seenComplaintIds.includes(id)));
       setDailyComplaintIds(batch.ids);
       setSeenComplaintIds(batch.seenIds);
       addRegistryEntryMetadata(batch.ids, dayNumber);
@@ -965,6 +980,7 @@ export default function Home() {
     const nextRightsAdvocateMode = prosecutorOffice === "executive" && (hasAdvocateCarry || Math.random() < 0.3);
     const pool = prosecutorOffice === "executive" && nextRightsAdvocateMode ? [...(PROFILE_COMPLAINTS.executive ?? []), ...advocateComplaints] : prosecutorOffice && PROFILE_COMPLAINTS[prosecutorOffice] ? PROFILE_COMPLAINTS[prosecutorOffice] : COMPLAINTS;
     const batch = drawDailyComplaintIds(pool, seenComplaintIds, carriedComplaintIds);
+    clearRegistryEntriesForReissue(batch.ids.filter((id) => seenComplaintIds.includes(id)));
     setDailyComplaintIds(batch.ids);
     setSeenComplaintIds(batch.seenIds);
     const nextServiceDay = dayNumber + 1;
