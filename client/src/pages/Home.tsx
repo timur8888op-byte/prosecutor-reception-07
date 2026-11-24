@@ -172,6 +172,8 @@ type PersonnelArchiveEntry = {
   day: number;
   createdAt: string;
 };
+type RegistryEntryMetadata = { number: string; registeredDay: number };
+type RegistryStatus = "received" | "review" | "verification" | "completed" | "rejected";
 const COMPLAINTS: Complaint[] = [
   { id: "housing", title: "Аварийное жильё", applicant: "Заявительница 01", role: "жительница района N", situation: "Я живу в доме, который признали аварийным ещё несколько лет назад. Дом должны были расселить, но решение постоянно откладывают. Прошу проверить мои жилищные права и помочь добиться безопасного жилья.", request: "Проверить, почему расселение не проводится, и принять меры для восстановления жилищных прав.", correct: "accept", outcome: "Жалоба принята: обстоятельства конкретны, есть указание на аварийный статус дома и длительное бездействие. Материал направляется на проверку.", background: "/manus-storage/complaint-housing-bg_9b956f3f.png", portrait: "/manus-storage/complaint-housing-portrait_88fe0823.png", documents: [{ label: "Решение комиссии", text: "Дом признан аварийным и подлежащим сносу. В выписке указана дата решения и состав комиссии." }, { label: "Ответ администрации", text: "В ответе говорится, что переселение запланировано, но конкретный срок предоставления жилья не указан." }, { label: "Сведения о доме", text: "Акт осмотра фиксирует неисправности конструкций, промерзание стен и жалобы жильцов на условия проживания." }], extra: { label: "План переселения", text: "Запрошенный план показывает, что срок переселения переносился дважды из-за отсутствия подготовленного жилого фонда." } },
   { id: "wage", title: "Задержка зарплаты", applicant: "Заявитель 02", role: "работник коммерческой организации", situation: "Мне не выплатили зарплату за несколько месяцев и не начислили компенсацию за задержку. Я обращался к руководству, но ответа не получил. Прошу проверить расчёты и добиться выплаты причитающихся сумм.", request: "Проверить задолженность, расчётные листки и соблюдение трудовых прав.", correct: "accept", outcome: "Жалоба принята: указан период, характер нарушения и требование о выплате. Материал направляется в трудовую проверку.", background: "/manus-storage/complaint-wage-bg_1214be84.png", portrait: "/manus-storage/complaint-wage-portrait_789f9519.png", documents: [{ label: "Расчётный листок", text: "За три расчётных периода начисления отражены, но фактическая выплата отсутствует. Сумма задолженности превышает 80 000 рублей." }, { label: "Табель", text: "В табеле отмечены полные смены. Данные совпадают с графиком, который работник приложил к обращению." }, { label: "Переписка", text: "На обращение к работодателю получен короткий ответ: «Выплата будет после закрытия месяца». Дата выплаты не указана." }], extra: { label: "Банковская выписка", text: "Выписка подтверждает отсутствие перечислений от работодателя за указанные расчётные периоды." } },
@@ -398,6 +400,7 @@ export default function Home() {
   const [registrySearch, setRegistrySearch] = useState("");
   const [registryStatus, setRegistryStatus] = useState("all");
   const [registryDecisions, setRegistryDecisions] = useState<Record<string, { decision: "accept" | "reject"; correct?: boolean; resolved?: boolean; responseAct?: ResponseAct; completedResponseFollowUps?: string[] }>>({});
+  const [registryEntryMetadata, setRegistryEntryMetadata] = useState<Record<string, RegistryEntryMetadata>>({});
   const [hoursLeft, setHoursLeft] = useState(8);
   const [dayNumber, setDayNumber] = useState(1);
   const [dayEnded, setDayEnded] = useState(false);
@@ -521,14 +524,14 @@ export default function Home() {
     setReviewedMaterials((items) => items.includes(index) ? items : [...items, index]);
   };
 
-  const restart = () => { setDayNumber(1); setDayEnded(false); setPendingComplaints(0); setDailyComplaintIds([]); setSeenComplaintIds([]); setCarriedComplaintIds([]); setRepeatComplaintIndex(null); setConsequenceQueue([]); setDayConsequences([]); setRightsAdvocateMode(false); setOnboardingStep("intro"); setRegion(null); setProsecutorOffice(null); setProsecutorModalOpen(false); setMilitaryNoticeOpen(false); setCharacter(null); setDraftName(""); setLocation(null); setCaseIndex(0); setComplaintIndex(0); setComplaintDecision(null); setScore(0); setCorrectDecisions(0); setTrust(3); setReputation({ quality: 3, leadership: 3, citizens: 3, risk: 1 }); setFeedback(null); setFinished(false); setGameOver(false); setGameOverReason("discipline"); setWrongDecisions(0); setRewardCounts(emptyCounts(REWARDS_GUIDANCE)); setDisciplineCounts(emptyCounts(DISCIPLINE_GUIDANCE)); setPersonnelArchiveEntries([]); setOpenMaterial(null); setReviewedMaterials([]); setOpenComplaintDoc(null); setReviewedComplaintDocs([]); setHoursLeft(8); setExtraRequested(false); };
+  const restart = () => { setDayNumber(1); setDayEnded(false); setPendingComplaints(0); setDailyComplaintIds([]); setSeenComplaintIds([]); setCarriedComplaintIds([]); setRegistryEntryMetadata({}); setRegistryDecisions({}); setRepeatComplaintIndex(null); setConsequenceQueue([]); setDayConsequences([]); setRightsAdvocateMode(false); setOnboardingStep("intro"); setRegion(null); setProsecutorOffice(null); setProsecutorModalOpen(false); setMilitaryNoticeOpen(false); setCharacter(null); setDraftName(""); setLocation(null); setCaseIndex(0); setComplaintIndex(0); setComplaintDecision(null); setScore(0); setCorrectDecisions(0); setTrust(3); setReputation({ quality: 3, leadership: 3, citizens: 3, risk: 1 }); setFeedback(null); setFinished(false); setGameOver(false); setGameOverReason("discipline"); setWrongDecisions(0); setRewardCounts(emptyCounts(REWARDS_GUIDANCE)); setDisciplineCounts(emptyCounts(DISCIPLINE_GUIDANCE)); setPersonnelArchiveEntries([]); setOpenMaterial(null); setReviewedMaterials([]); setOpenComplaintDoc(null); setReviewedComplaintDocs([]); setHoursLeft(8); setExtraRequested(false); };
   const saveGame = () => {
     try {
       const state = {
         onboardingStep, region, prosecutorOffice, rightsAdvocateMode, character, draftName, draftGender, location,
         caseIndex, complaintIndex, dailyComplaintIds, seenComplaintIds, carriedComplaintIds, complaintDecision,
         responseActDecision, responseActDialogClosed, completedResponseFollowUps, intakeQuestionAsked, openComplaintDoc,
-        reviewedComplaintDocs, askedReceptionQuestions, activeReceptionQuestion, registryDecisions, hoursLeft, dayNumber,
+        reviewedComplaintDocs, askedReceptionQuestions, activeReceptionQuestion, registryDecisions, registryEntryMetadata, hoursLeft, dayNumber,
         dayEnded, pendingComplaints, repeatComplaintIndex, consequenceQueue, dayConsequences, extraRequested, score,
         correctDecisions, trust, reputation, feedback, finished, gameOver, gameOverReason, wrongDecisions,
         rewardCounts, disciplineCounts, personnelArchiveEntries, folderOpened, selectedCityDistrictId, selectedCityEventId, openMaterial, reviewedMaterials
@@ -573,6 +576,18 @@ export default function Home() {
     setAskedReceptionQuestions(getSaved("askedReceptionQuestions", []));
     setActiveReceptionQuestion(getSaved<number | null>("activeReceptionQuestion", null));
     setRegistryDecisions(getSaved("registryDecisions", {}));
+    const savedRegistryMetadata = getSaved<Record<string, RegistryEntryMetadata>>("registryEntryMetadata", {});
+    if (Object.keys(savedRegistryMetadata).length > 0) {
+      setRegistryEntryMetadata(savedRegistryMetadata);
+    } else {
+      const legacyQueue = [...getSaved<string[]>("carriedComplaintIds", []), ...getSaved<string[]>("dailyComplaintIds", [])]
+        .filter((id, index, all) => all.indexOf(id) === index);
+      const legacyDay = getSaved("dayNumber", 1);
+      setRegistryEntryMetadata(Object.fromEntries(legacyQueue.map((id, index) => [
+        id,
+        { number: `ПР-${String(legacyDay).padStart(3, "0")}-${String(index + 1).padStart(2, "0")}`, registeredDay: legacyDay }
+      ])));
+    }
     setHoursLeft(getSaved("hoursLeft", 8));
     setDayNumber(getSaved("dayNumber", 1));
     setDayEnded(getSaved("dayEnded", false));
@@ -675,6 +690,22 @@ export default function Home() {
     });
   }
 
+  const addRegistryEntryMetadata = (ids: string[], registeredDay: number) => {
+    setRegistryEntryMetadata((current) => {
+      let changed = false;
+      const next = { ...current };
+      ids.forEach((id, index) => {
+        if (next[id]) return;
+        next[id] = {
+          number: `ПР-${String(registeredDay).padStart(3, "0")}-${String(index + 1).padStart(2, "0")}`,
+          registeredDay,
+        };
+        changed = true;
+      });
+      return changed ? next : current;
+    });
+  };
+
   const chooseLocation = (nextLocation: LocationId) => {
     startOfficeAmbience();
     setFolderOpened(false);
@@ -693,6 +724,7 @@ export default function Home() {
       const batch = drawDailyComplaintIds(pool, seenComplaintIds, carriedComplaintIds);
       setDailyComplaintIds(batch.ids);
       setSeenComplaintIds(batch.seenIds);
+      addRegistryEntryMetadata(batch.ids, dayNumber);
     }
   };
   const switchLocation = (nextLocation: LocationId) => chooseLocation(nextLocation);
@@ -704,7 +736,34 @@ export default function Home() {
   const currentComplaintRecord = currentComplaint ? registryDecisions[currentComplaint.id] : undefined;
   const currentComplaintResolved = Boolean(currentComplaintRecord && (currentComplaintRecord.resolved ?? currentComplaintRecord.decision === "reject"));
   const isWrittenReception = prosecutorOffice === "executive";
-  const registryRows = activeComplaints.map((item, index) => { const record=registryDecisions[item.id] ?? (index===complaintIndex && complaintDecision ? {decision:complaintDecision,responseAct:responseActDecision ?? undefined} : undefined); const resolved = Boolean(record && (record.resolved ?? record.decision === "reject")); const status=!record ? "received" : !resolved ? record.responseAct ? "verification" : "review" : record.decision === "reject" ? "rejected" : record.responseAct ? "verification" : "completed"; return { item, index, status }; });
+  const getRegistryStatus = (record?: { decision: "accept" | "reject"; resolved?: boolean; responseAct?: ResponseAct }): RegistryStatus => {
+    if (!record) return "received";
+    const resolved = record.resolved ?? record.decision === "reject";
+    if (record.decision === "reject" && resolved) return "rejected";
+    if (resolved) return "completed";
+    if (record.responseAct) return "verification";
+    return "review";
+  };
+  const registryStatusLabels: Record<RegistryStatus, string> = {
+    received: "Поступило",
+    review: "На рассмотрении",
+    verification: "Назначена проверка",
+    completed: "Завершено",
+    rejected: "Отказано",
+  };
+  const registryRows = activeComplaints.map((item, index) => {
+    const record = registryDecisions[item.id] ?? (index === complaintIndex && complaintDecision
+      ? { decision: complaintDecision, responseAct: responseActDecision ?? undefined }
+      : undefined);
+    const metadata = registryEntryMetadata[item.id];
+    return {
+      item,
+      index,
+      status: getRegistryStatus(record),
+      registrationNumber: metadata?.number ?? `ПР-${String(dayNumber).padStart(3, "0")}-${String(index + 1).padStart(2, "0")}`,
+      registeredDay: metadata?.registeredDay ?? dayNumber,
+    };
+  });
   const cityClamp = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
   const cityDistricts = [
     { id: "central", name: "Центральный", kind: "Административный центр", focus: "Муниципальное управление", concern: "Земельные распоряжения, исполнение решений и работа органов власти.", signal: "Управленческая устойчивость", score: cityClamp((reputation.leadership * .55 + reputation.quality * .45) * 20), icon: Building2, note: "Здесь сосредоточены органы управления и ключевые административные решения." },
@@ -749,9 +808,9 @@ export default function Home() {
     };
   });
   const selectedCityEvent = cityEvents.find((event) => event.id === selectedCityEventId) ?? null;
-  const cityOpenAppeals = Math.max(registryRows.filter(({ status }) => status === "received" || status === "review" || status === "verification").length, pendingComplaints);
+  const cityOpenAppeals = registryRows.filter(({ status }) => status === "received" || status === "review" || status === "verification").length;
   const cityStatusLabel = (value: number) => value >= 75 ? "Устойчиво" : value >= 55 ? "Под наблюдением" : "Требует внимания";
-  const filteredRegistryRows = registryRows.filter(({item,index,status}) => { const q=registrySearch.trim().toLowerCase(); const matches=!q || item.applicant.toLowerCase().includes(q) || item.title.toLowerCase().includes(q) || String(index+1).padStart(2,"0").includes(q); return matches && (registryStatus === "all" || status === registryStatus); });
+  const filteredRegistryRows = registryRows.filter(({ item, status, registrationNumber }) => { const q = registrySearch.trim().toLowerCase(); const matches = !q || item.applicant.toLowerCase().includes(q) || item.title.toLowerCase().includes(q) || registrationNumber.toLowerCase().includes(q); return matches && (registryStatus === "all" || status === registryStatus); });
   const openRegistryComplaint = (index:number) => { const item = activeComplaints[index]; const record = item ? registryDecisions[item.id] : undefined; const resolved = Boolean(record && (record.resolved ?? record.decision === "reject")); setFolderOpened(true); setComplaintIndex(index); setComplaintDecision(record?.correct === false ? null : record?.decision ?? null); setResponseActDecision(record?.responseAct ?? null); setResponseActDialogClosed(resolved); setCompletedResponseFollowUps(record?.completedResponseFollowUps ?? []); setIntakeQuestionAsked(false); setOpenComplaintDoc(null); setReviewedComplaintDocs([]); setAskedReceptionQuestions([]); setActiveReceptionQuestion(null); setReceptionQuestionsDialogOpen(false); setExtraRequested(false); setRegistryOpen(false); setLocation("reception"); };
   const complaintAssetKey = location === "reception" && currentComplaint ? `${complaintIndex}|${currentComplaint.background}|${isWrittenReception ? "written" : currentComplaint.portrait}` : null;
   const [loadedComplaintAssetKey, setLoadedComplaintAssetKey] = useState<string | null>(null);
@@ -912,8 +971,10 @@ export default function Home() {
     const batch = drawDailyComplaintIds(pool, seenComplaintIds, carriedComplaintIds);
     setDailyComplaintIds(batch.ids);
     setSeenComplaintIds(batch.seenIds);
+    const nextServiceDay = dayNumber + 1;
+    addRegistryEntryMetadata(batch.ids, nextServiceDay);
     setPendingComplaints(carriedComplaintIds.length);
-    setDayNumber((value) => value + 1);
+    setDayNumber(nextServiceDay);
     setHoursLeft(8);
     setDayEnded(false);
     setLocation("reception");
