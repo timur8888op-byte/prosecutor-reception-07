@@ -4193,3 +4193,26 @@ html, body, #root { width: 100%; min-width: 100%; min-height: 100%; height: 100%
   .carryover-summary { padding:12px 10px; }
   .carryover-summary li { align-items:flex-start; flex-direction:column; gap:5px; }
 }
+
+/* Territorial prosecutor office: real everyday workstation with visible daylight window. */
+.game-shell.office-theme-territorial {
+  background-position: center center !important;
+  background-size: cover !important;
+  background-attachment: scroll !important;
+}
+.game-shell.office-theme-territorial > .office-atmosphere {
+  display: none;
+}
+.game-shell.office-theme-territorial::after {
+  background: linear-gradient(90deg, rgba(5,12,11,.22), transparent 56%, rgba(5,12,11,.12));
+}
+@media (max-width: 900px) {
+  .game-shell.office-theme-territorial {
+    background-position: 76% center !important;
+  }
+}
+@media (max-width: 680px) {
+  .game-shell.office-theme-territorial {
+    background-position: 82% center !important;
+  }
+}

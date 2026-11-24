@@ -16,7 +16,8 @@ const readStoredGame = (): StoredGame | null => {
 };
 
 const OFFICE_BG = "/manus-storage/prosecutor-night-office-new.png";
-const PROFILE_BACKGROUNDS: Record<string, string> = { territorial: OFFICE_BG, executive: "/manus-storage/executive-office-bg_aa1818c9.png", environmental: "/manus-storage/environmental-office-bg_a009f425.png", military: "/manus-storage/military-office-bg-bright_f71bdfab.png", transport: OFFICE_BG };
+const PROSECUTOR_OFFICE_BG = "/manus-storage/prosecutor-office-territorial.webp";
+const PROFILE_BACKGROUNDS: Record<string, string> = { territorial: PROSECUTOR_OFFICE_BG, executive: "/manus-storage/executive-office-bg_aa1818c9.png", environmental: "/manus-storage/environmental-office-bg_a009f425.png", military: "/manus-storage/military-office-bg-bright_f71bdfab.png", transport: OFFICE_BG };
 const PROFILE_LOADING_BACKGROUNDS: Record<string, string> = { territorial: "/manus-storage/loading-territorial-blue_98a4219b.png", executive: "/manus-storage/loading-corrections-red_aadd26a9.png", environmental: "/manus-storage/loading-environment-green_619dd58d.png", military: "/manus-storage/loading-military-darkgreen_b5a432ca.png", transport: "/manus-storage/loading-transport-orange_a567cded.png" };
 const PROFILE_LOADING_TIPS: Record<string, string> = {
   territorial: "В территориальной прокуратуре сначала установите, затрагивает ли обращение публичный интерес и полномочия органов власти.",
@@ -1295,7 +1296,7 @@ export default function Home() {
   );
 
   return (
-    <main className={`game-shell office-theme-${prosecutorOffice ?? "territorial"}`} data-office-time={officeTimePhase} style={{ backgroundImage: `linear-gradient(90deg, rgba(7,18,20,.88) 0%, rgba(7,18,20,.72) 33%, rgba(7,18,20,.18) 72%, rgba(7,18,20,.56) 100%), url(${PROFILE_BACKGROUNDS[prosecutorOffice ?? ""] ?? OFFICE_BG})` }}>
+    <main className={`game-shell office-theme-${prosecutorOffice ?? "territorial"}`} data-office-time={officeTimePhase} style={{ backgroundImage: `linear-gradient(90deg, rgba(7,18,20,.54) 0%, rgba(7,18,20,.38) 33%, rgba(7,18,20,.08) 72%, rgba(7,18,20,.22) 100%), url(${PROFILE_BACKGROUNDS[prosecutorOffice ?? ""] ?? OFFICE_BG})` }}>
       <div className="office-atmosphere" aria-hidden="true"><span className="office-window-scene"><i className="office-window-headlights" /><i className="office-window-curtain" /></span><span className="office-car-reflection" /><span className="office-lamp-glow" /></div>{musicPlayer}<div className="grain" />
       {gameOver && <div className="game-over-backdrop" role="dialog" aria-modal="true" aria-labelledby="game-over-title"><section className="game-over-card"><span className="eyebrow">СЛУЖЕБНОЕ РЕШЕНИЕ · {gameOverReason === "bribe" ? "КОРРУПЦИОННОЕ ПРЕСТУПЛЕНИЕ" : "ДИСЦИПЛИНА"}</span><h2 id="game-over-title">Игра окончена</h2><p>{gameOverReason === "bribe" ? "Вы были пойманы за получением взятки при проведении ОРМ «Проверочная закупка». В соответствии со ст. 114 УПК РФ и ст. 43 ФЗ «О прокуратуре Российской Федерации»." : "Вы были уволены в связи с несовместимостью с дальнейшим прохождением службы в силу наличия большого количества дисциплинарных взысканий."}</p><div className="game-over-status">Статус: <strong>{gameOverReason === "bribe" ? "получение взятки · служба прекращена" : "увольнение из органов прокуратуры"}</strong></div><button className="primary-button" onClick={returnToMainMenu}><RotateCcw size={16} /> Вернуться в главное меню</button></section></div>}
       <header className={`topbar ${folderOpened ? "topbar-with-return" : ""}`}>
