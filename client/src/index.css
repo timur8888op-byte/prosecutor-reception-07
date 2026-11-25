@@ -4194,17 +4194,23 @@ html, body, #root { width: 100%; min-width: 100%; min-height: 100%; height: 100%
   .carryover-summary li { align-items:flex-start; flex-direction:column; gap:5px; }
 }
 
-/* Territorial prosecutor office: real everyday workstation with visible daylight window. */
+/* Territorial prosecutor office: show the photograph directly as a static page background. */
 .game-shell.office-theme-territorial {
+  background-color: #071214 !important;
   background-position: center center !important;
   background-size: cover !important;
+  background-repeat: no-repeat !important;
   background-attachment: scroll !important;
 }
-.game-shell.office-theme-territorial > .office-atmosphere {
-  display: none;
-}
-.game-shell.office-theme-territorial::after {
-  background: linear-gradient(90deg, rgba(5,12,11,.22), transparent 56%, rgba(5,12,11,.12));
+.game-shell.office-theme-territorial::before,
+.game-shell.office-theme-territorial::after,
+.game-shell.office-theme-territorial > .office-atmosphere,
+.game-shell.office-theme-territorial > .grain {
+  display: none !important;
+  content: none !important;
+  animation: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
 }
 @media (max-width: 900px) {
   .game-shell.office-theme-territorial {
