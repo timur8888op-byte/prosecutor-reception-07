@@ -354,7 +354,12 @@ function GuidanceItem({ label, items, counts }: { label: string; items: string[]
   return <div className="guidance-item"><span>{label}</span><button type="button" className="guidance-count-button" aria-label={`Открыть историю: ${label}, всего ${total}`} aria-expanded={open} onClick={() => setOpen(true)}><strong>{total}</strong><small>ОТКРЫТЬ</small></button>{open && <div className="guidance-records-overlay" onMouseDown={(event) => event.target === event.currentTarget && setOpen(false)}><section className="guidance-records-dialog" role="dialog" aria-modal="true" aria-label={label}><header><div><span>ЛИЧНОЕ ДЕЛО СОТРУДНИКА</span><h3>{label}</h3></div><button type="button" onClick={() => setOpen(false)} aria-label="Закрыть"><X size={18}/></button></header><ul>{items.map((item) => <li key={item}><span>{item}</span><b>{counts[item] ?? 0}</b></li>)}</ul><footer><span>ВСЕГО ЗА КАРЬЕРУ</span><strong>{total}</strong></footer></section></div>}</div>;
 }
 
-const PRELOAD_IMAGES = [OFFICE_BG, ...Object.values(PROFILE_BACKGROUNDS), ...Object.values(PROFILE_LOADING_BACKGROUNDS), ...Object.values(PROFILE_PORTRAITS), ...Object.values(PROFILE_CARD_PORTRAITS), ADMIN_MAP_SVG];
+const STARTUP_SLIDES = [
+  "/manus-storage/startup-prosecutor-land-control.webp",
+  "/manus-storage/startup-prosecutor-city.webp",
+  "/manus-storage/startup-prosecutor-epaulettes.webp",
+] as const;
+const PRELOAD_IMAGES = [OFFICE_BG, ...Object.values(PROFILE_BACKGROUNDS), ...Object.values(PROFILE_LOADING_BACKGROUNDS), ...Object.values(PROFILE_PORTRAITS), ...Object.values(PROFILE_CARD_PORTRAITS), ...STARTUP_SLIDES, ADMIN_MAP_SVG];
 
 export default function Home() {
   const [assetsReady, setAssetsReady] = useState(false);
@@ -371,6 +376,19 @@ export default function Home() {
   }, []);
 
   const [onboardingStep, setOnboardingStep] = useState<"intro" | "region" | "character">("intro");
+  const [introSplashVisible, setIntroSplashVisible] = useState(true);
+  const [introSlideIndex, setIntroSlideIndex] = useState(0);
+  useEffect(() => {
+    if (!assetsReady || onboardingStep !== "intro" || !introSplashVisible) return;
+    const slideOne = window.setTimeout(() => setIntroSlideIndex(1), 3333);
+    const slideTwo = window.setTimeout(() => setIntroSlideIndex(2), 6666);
+    const finish = window.setTimeout(() => setIntroSplashVisible(false), 10000);
+    return () => {
+      window.clearTimeout(slideOne);
+      window.clearTimeout(slideTwo);
+      window.clearTimeout(finish);
+    };
+  }, [assetsReady, onboardingStep, introSplashVisible]);
   const [region, setRegion] = useState<string | null>(null);
   const [prosecutorOffice, setProsecutorOffice] = useState<(typeof PROSECUTOR_OFFICES)[number]["id"] | null>(null);
   const [rightsAdvocateMode, setRightsAdvocateMode] = useState(false);
@@ -549,7 +567,7 @@ export default function Home() {
     return true;
   };
 
-  const restart = () => { setDayNumber(1); setDayEnded(false); setPendingComplaints(0); setDailyComplaintIds([]); setSeenComplaintIds([]); setCarriedComplaintIds([]); setRegistryEntryMetadata({}); setRegistryDecisions({}); setRepeatComplaintIndex(null); setConsequenceQueue([]); setDayConsequences([]); setRightsAdvocateMode(false); setOnboardingStep("intro"); setRegion(null); setProsecutorOffice(null); setProsecutorModalOpen(false); setMilitaryNoticeOpen(false); setCharacter(null); setDraftName(""); setLocation(null); setCaseIndex(0); setComplaintIndex(0); setDayPlanOrder([]); setDayPlanOpen(false); setComplaintDecision(null); setScore(0); setCorrectDecisions(0); setTrust(3); setReputation({ quality: 3, leadership: 3, citizens: 3, risk: 1 }); setFeedback(null); setFinished(false); setGameOver(false); setGameOverReason("discipline"); setWrongDecisions(0); setRewardCounts(emptyCounts(REWARDS_GUIDANCE)); setDisciplineCounts(emptyCounts(DISCIPLINE_GUIDANCE)); setPersonnelArchiveEntries([]); setOpenMaterial(null); setReviewedMaterials([]); setInspectionRoute([]); setInspectionSelectedPoint(0); setInspectionReportOpen(false); setOpenComplaintDoc(null); setReviewedComplaintDocs([]); setHoursLeft(8); setExtraRequested(false); };
+  const restart = () => { setIntroSplashVisible(true); setIntroSlideIndex(0); setDayNumber(1); setDayEnded(false); setPendingComplaints(0); setDailyComplaintIds([]); setSeenComplaintIds([]); setCarriedComplaintIds([]); setRegistryEntryMetadata({}); setRegistryDecisions({}); setRepeatComplaintIndex(null); setConsequenceQueue([]); setDayConsequences([]); setRightsAdvocateMode(false); setOnboardingStep("intro"); setRegion(null); setProsecutorOffice(null); setProsecutorModalOpen(false); setMilitaryNoticeOpen(false); setCharacter(null); setDraftName(""); setLocation(null); setCaseIndex(0); setComplaintIndex(0); setDayPlanOrder([]); setDayPlanOpen(false); setComplaintDecision(null); setScore(0); setCorrectDecisions(0); setTrust(3); setReputation({ quality: 3, leadership: 3, citizens: 3, risk: 1 }); setFeedback(null); setFinished(false); setGameOver(false); setGameOverReason("discipline"); setWrongDecisions(0); setRewardCounts(emptyCounts(REWARDS_GUIDANCE)); setDisciplineCounts(emptyCounts(DISCIPLINE_GUIDANCE)); setPersonnelArchiveEntries([]); setOpenMaterial(null); setReviewedMaterials([]); setInspectionRoute([]); setInspectionSelectedPoint(0); setInspectionReportOpen(false); setOpenComplaintDoc(null); setReviewedComplaintDocs([]); setHoursLeft(8); setExtraRequested(false); };
   const saveGame = () => {
     try {
       const state = {
@@ -1234,6 +1252,34 @@ export default function Home() {
   if (!assetsReady || (complaintAssetKey && loadedComplaintAssetKey !== complaintAssetKey)) return <main className="asset-loading-screen"><div className="asset-loading-card"><span className="live-dot" /><p>{complaintAssetKey ? "ПОДГОТОВКА ПРИЁМНОЙ" : "ПОДГОТОВКА АРХИВА"}</p><strong>{complaintAssetKey ? "Загрузка портрета посетителя и заднего фона…" : "Загрузка архивных материалов…"}</strong></div></main>;
 
   const musicPlayer = <MusicPlayer albumIndex={musicAlbum} trackIndex={musicTrack} isPlaying={musicPlaying} isOpen={musicOpen} onToggleOpen={() => setMusicOpen((value) => !value)} onTogglePlaying={() => setMusicPlaying((value) => !value)} onPrevious={() => changeMusicTrack(-1)} onNext={() => changeMusicTrack(1)} onSelectTrack={setMusicTrack} onSelectAlbum={changeMusicAlbum} />;
+
+  if (onboardingStep === "intro" && introSplashVisible) return (
+    <main className="startup-splash" role="status" aria-label="Заставка перед началом службы">
+      <style>{`
+        .startup-splash{position:fixed;inset:0;z-index:1000;min-height:100dvh;overflow:hidden;background:#071018;color:#f4ead8}
+        .startup-splash .startup-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transform:scale(1.025);transition:opacity .9s ease-in-out;will-change:opacity,transform}
+        .startup-splash .startup-image.is-active{opacity:1;animation:startup-splash-zoom 3.55s ease-out both}
+        .startup-splash-vignette{position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,10,16,.42),rgba(4,10,16,.05) 55%,rgba(4,10,16,.34)),linear-gradient(0deg,rgba(3,8,13,.78),transparent 30%,rgba(3,8,13,.12));pointer-events:none}
+        .startup-splash-caption{position:absolute;left:clamp(22px,5vw,76px);right:clamp(22px,5vw,76px);bottom:clamp(26px,5vh,56px);max-width:560px;text-shadow:0 2px 14px rgba(0,0,0,.7)}
+        .startup-splash-kicker{display:block;margin-bottom:13px;color:#e4c28c;font:600 10px/1.4 'IBM Plex Mono',monospace;letter-spacing:.2em}
+        .startup-splash-title{display:flex;align-items:center;justify-content:space-between;gap:18px;color:#f6f0e5;font:600 clamp(12px,1.25vw,15px)/1.4 'IBM Plex Mono',monospace;letter-spacing:.15em}
+        .startup-splash-count{flex:none;color:rgba(246,240,229,.72);font-size:10px;letter-spacing:.12em}
+        .startup-splash-track{height:3px;margin-top:15px;overflow:hidden;background:rgba(246,240,229,.3);box-shadow:0 1px 8px rgba(0,0,0,.25)}
+        .startup-splash-bar{display:block;width:0;height:100%;background:linear-gradient(90deg,#c79b60,#f2d4a1);animation:startup-splash-progress 10s linear forwards}
+        @keyframes startup-splash-zoom{from{transform:scale(1.025)}to{transform:scale(1.09)}}
+        @keyframes startup-splash-progress{to{width:100%}}
+        @media(max-width:600px){.startup-splash .startup-image{object-position:center}.startup-splash-caption{bottom:calc(22px + env(safe-area-inset-bottom))}.startup-splash-kicker{font-size:8px}.startup-splash-title{font-size:11px;letter-spacing:.1em}}
+        @media(prefers-reduced-motion:reduce){.startup-splash .startup-image{transition:none;animation:none!important;transform:none}.startup-splash-bar{animation:none;width:100%}}
+      `}</style>
+      {STARTUP_SLIDES.map((src, index) => <img key={src} className={`startup-image ${introSlideIndex === index ? "is-active" : ""}`} src={src} alt="" aria-hidden="true" />)}
+      <div className="startup-splash-vignette" />
+      <div className="startup-splash-caption">
+        <span className="startup-splash-kicker">ПРОКУРАТУРА · УЧЕБНАЯ СИМУЛЯЦИЯ</span>
+        <div className="startup-splash-title"><span>ПОДГОТОВКА К СЛУЖБЕ</span><span className="startup-splash-count">0{introSlideIndex + 1} / 03</span></div>
+        <div className="startup-splash-track"><i className="startup-splash-bar" /></div>
+      </div>
+    </main>
+  );
 
   if (onboardingStep === "intro") return (
     <main className="onboarding-screen" style={{ backgroundImage: `linear-gradient(90deg, rgba(7,18,20,.95), rgba(7,18,20,.44)), url(${OFFICE_BG})` }}>
