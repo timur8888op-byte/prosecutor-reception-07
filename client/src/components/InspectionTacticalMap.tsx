@@ -1,4 +1,4 @@
-import { ArrowRight, Check, CheckCircle2, Clock3, Compass, FileText, Flag, MapPin, Navigation, Route, ShieldCheck, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, Compass, FileText, Flag, MapPin, Navigation, Route, ShieldCheck, X } from "lucide-react";
 
 type FieldMaterial = { label: string; text: string };
 type Decision = "prosecute" | "dismiss";
@@ -19,6 +19,8 @@ type InspectionCase = {
 };
 
 type Props = {
+  territorialFullscreen: boolean;
+  onBackToCabinet: () => void;
   caseFile: InspectionCase;
   materials: FieldMaterial[];
   visited: number[];
@@ -113,6 +115,16 @@ const SCENE_TITLES: Record<SceneKind, { title: string; subtitle: string }> = {
   facility: { title: "Территория учреждения", subtitle: "Корпуса и контрольные зоны" },
 };
 
+const SCENE_IMAGES: Record<SceneKind, string> = {
+  construction: "/manus-storage/inspection-site-construction.svg",
+  forest: "/manus-storage/inspection-site-forest.svg",
+  archive: "/manus-storage/inspection-site-archive.svg",
+  roadside: "/manus-storage/inspection-site-roadside.svg",
+  agriculture: "/manus-storage/inspection-site-agriculture.svg",
+  river: "/manus-storage/inspection-site-river.svg",
+  facility: "/manus-storage/inspection-site-facility.svg",
+};
+
 const getTravelMinutes = (from: PointLayout | undefined, to: PointLayout) => {
   if (!from) return 0;
   const distance = Math.hypot(from.x - to.x, from.y - to.y);
@@ -197,7 +209,7 @@ function SceneArtwork({ kind }: { kind: SceneKind }) {
 
 export function InspectionTacticalMap(props: Props) {
   const {
-    caseFile, materials, visited, route, selectedPoint, reportOpen, remainingHours, canDecide,
+    territorialFullscreen, onBackToCabinet, caseFile, materials, visited, route, selectedPoint, reportOpen, remainingHours, canDecide,
     feedback, finished, score, totalCases, trust, rating, onSelectPoint, onInspectPoint,
     onOpenReport, onDecision, onNext, onRestart,
   } = props;
@@ -219,13 +231,16 @@ export function InspectionTacticalMap(props: Props) {
   const routePoints = route.map((index) => points[index]).filter(Boolean).map((point) => `${point.x},${point.y}`).join(" ");
   const remainingLabel = remainingHours.toLocaleString("ru-RU", { minimumFractionDigits: Number.isInteger(remainingHours) ? 0 : 1, maximumFractionDigits: 1 });
   const inspectedCount = visited.length;
+  const fullscreenHeader = territorialFullscreen ? <header className="inspection-fullscreen-header"><div className="inspection-fullscreen-brand"><span className="inspection-fullscreen-mark"><ShieldCheck size={19}/></span><span><b>ВЫЕЗДНАЯ ПРОВЕРКА</b><small>{caseFile.number} · {caseFile.place}</small></span></div><div className="inspection-fullscreen-title"><span>ТЕРРИТОРИАЛЬНАЯ ПРОКУРАТУРА</span><b>{caseFile.category}</b></div><div className="inspection-fullscreen-clock"><span>ОСТАЛОСЬ</span><b>{remainingLabel} ч.</b></div><button type="button" className="inspection-back-cabinet" onClick={onBackToCabinet}><ArrowLeft size={16}/> В кабинет</button></header> : null;
 
   if (finished) {
-    return <section className="inspection-finish"><div className="inspection-finish-mark"><ShieldCheck size={30}/></div><span>ВЫЕЗДНАЯ РАБОТА · ДЕНЬ ЗАВЕРШЁН</span><h2>{rating}</h2><p>Проверка закончена. Верных решений: <b>{score} из {totalCases}</b>. Доверие канцелярии: <b>{trust}/5</b>.</p><button type="button" onClick={onRestart}>Начать новую смену <ArrowRight size={16}/></button></section>;
+    return <>{fullscreenHeader}<section className="inspection-finish"><div className="inspection-finish-mark"><ShieldCheck size={30}/></div><span>ВЫЕЗДНАЯ РАБОТА · ДЕНЬ ЗАВЕРШЁН</span><h2>{rating}</h2><p>Проверка закончена. Верных решений: <b>{score} из {totalCases}</b>. Доверие канцелярии: <b>{trust}/5</b>.</p><button type="button" onClick={onRestart}>Начать новую смену <ArrowRight size={16}/></button></section></>;
   }
 
   if (reportOpen) {
     return (
+      <>
+      {fullscreenHeader}
       <section className="inspection-report-screen">
         <header className="inspection-report-head"><div><span>ПОЛЕВОЙ ЖУРНАЛ · {caseFile.number}</span><h2>Результаты выездной проверки</h2><p>{caseFile.category} · {caseFile.place}</p></div><div className="inspection-report-stamp"><ShieldCheck size={18}/> ОСМОТР ЗАВЕРШЁН</div></header>
         <div className="inspection-report-grid">
@@ -237,10 +252,13 @@ export function InspectionTacticalMap(props: Props) {
           </aside>
         </div>
       </section>
+      </>
     );
   }
 
   return (
+    <>
+    {fullscreenHeader}
     <section className={"inspection-tactical inspection-theme-" + kind}>
       <header className="inspection-tactical-head"><div><span className="inspection-eyebrow"><Navigation size={13}/> ВЫЕЗДНАЯ ПРОВЕРКА · МАРШРУТ 02</span><h2>{caseFile.category}</h2><p>{caseFile.number} · {caseFile.place}</p></div><div className="inspection-hud"><div><span>РАБОЧЕЕ ВРЕМЯ</span><b>{remainingLabel} ч.</b></div><div><span>ТОЧКИ ОСМОТРА</span><b>{inspectedCount}/{points.length}</b></div></div></header>
       <div className="inspection-objective"><div><Flag size={16}/><span><b>ЗАДАЧА ВЫЕЗДА</b>{caseFile.summary}</span></div><div className="inspection-progress"><i style={{ width: (points.length ? inspectedCount / points.length * 100 : 0) + "%" }}/></div></div>
@@ -248,6 +266,7 @@ export function InspectionTacticalMap(props: Props) {
         <div className="inspection-map-column">
           <div className="inspection-map-title"><div><span>СХЕМА ТЕРРИТОРИИ</span><b>{explicit?.title ?? scene.title}</b><small>{explicit?.subtitle ?? scene.subtitle}</small></div><div className="inspection-compass"><Compass size={22}/><span>СЕВЕР</span></div></div>
           <div className="inspection-map-surface">
+            <img className="inspection-site-image" src={SCENE_IMAGES[kind]} alt="" aria-hidden="true" />
             <SceneArtwork kind={kind}/>
             <svg className="inspection-route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
               {routePoints && <polyline points={routePoints} className="inspection-route-line"/>}
@@ -278,5 +297,6 @@ export function InspectionTacticalMap(props: Props) {
         </aside>
       </div>
     </section>
+    </>
   );
 }
