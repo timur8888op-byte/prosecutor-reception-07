@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#8ba09d"/><stop offset="1" stop-color="#d8cba8"/></linearGradient><linearGradient id="field" x2="0" y2="1"><stop stop-color="#7d885b"/><stop offset="1" stop-color="#394a32"/></linearGradient><linearGradient id="factory" x2="0" y2="1"><stop stop-color="#c5bda8"/><stop offset="1" stop-color="#716e62"/></linearGradient></defs>
+<rect width="1600" height="900" fill="url(#sky)"/><path d="M0 420Q340 350 680 430T1200 395T1600 400V900H0Z" fill="#657d5b"/><path d="M0 570Q400 480 800 570T1600 540V900H0Z" fill="url(#field)"/>
+<g fill="#4f6948"><path d="M0 475q200-90 400 0v70H0zM500 470q250-110 500 0v70H500zM1100 470q250-90 500 0v70h-500z"/></g>
+<g fill="url(#factory)" stroke="#51594f" stroke-width="8"><path d="M250 300h590v250H250z"/><path d="M880 355h440v195H880z"/><path d="M340 230h110v70H340zM500 210h110v90H500z"/><path d="M1100 170h115v185h-115z"/></g>
+<g fill="#687a78" stroke="#3f4d4d" stroke-width="9"><path d="M275 330h140v190H275zM450 330h140v190H450zM625 330h140v190H625zM930 385h130v135H930zM1090 385h180v135h-180z"/></g>
+<g fill="#b1a990" stroke="#4a4b42" stroke-width="8"><path d="M1340 300h100v250h-100z"/><path d="M1300 300q90-150 180 0z"/></g>
+<path d="M0 700Q380 600 780 690T1600 650V900H0Z" fill="#333f2e"/>
+<g stroke="#aeb27a" stroke-width="5" opacity=".65"><path d="M0 720l500-70M0 770l600-90M0 820l680-95M780 720l600-80M800 770l800-95M850 820l750-95"/></g>
+<g transform="translate(600 610)"><path d="M0 55h200v90H0z" fill="#a07b43" stroke="#312e27" stroke-width="7"/><path d="M45 0h110l45 55H0z" fill="#657b69" stroke="#312e27" stroke-width="7"/><circle cx="45" cy="150" r="39" fill="#222b25" stroke="#b6a47a" stroke-width="8"/><circle cx="175" cy="150" r="39" fill="#222b25" stroke="#b6a47a" stroke-width="8"/></g>
+<g fill="#d5c6a2" opacity=".75"><path d="M100 670h250v18H100zM1180 680h260v18h-260z"/></g><path d="M0 868Q450 810 900 860T1600 835V900H0Z" fill="#19271e" opacity=".7"/>
+</svg>
