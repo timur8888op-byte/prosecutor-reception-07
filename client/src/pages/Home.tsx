@@ -355,9 +355,9 @@ function GuidanceItem({ label, items, counts }: { label: string; items: string[]
 }
 
 const STARTUP_SLIDES = [
-  "/manus-storage/startup-prosecutor-land-control.webp",
-  "/manus-storage/startup-prosecutor-city.webp",
-  "/manus-storage/startup-prosecutor-epaulettes.webp",
+  PROFILE_CARD_PORTRAITS.environmental,
+  PROFILE_CARD_PORTRAITS.territorial,
+  PROFILE_CARD_PORTRAITS.executive,
 ] as const;
 const PRELOAD_IMAGES = [OFFICE_BG, ...Object.values(PROFILE_BACKGROUNDS), ...Object.values(PROFILE_LOADING_BACKGROUNDS), ...Object.values(PROFILE_PORTRAITS), ...Object.values(PROFILE_CARD_PORTRAITS), ...STARTUP_SLIDES, ADMIN_MAP_SVG];
 
@@ -378,8 +378,22 @@ export default function Home() {
   const [onboardingStep, setOnboardingStep] = useState<"intro" | "region" | "character">("intro");
   const [introSplashVisible, setIntroSplashVisible] = useState(true);
   const [introSlideIndex, setIntroSlideIndex] = useState(0);
+  const [introSlidesReady, setIntroSlidesReady] = useState(false);
   useEffect(() => {
-    if (!assetsReady || onboardingStep !== "intro" || !introSplashVisible) return;
+    let active = true;
+    Promise.all(STARTUP_SLIDES.map((src) => new Promise<void>((resolve) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.onload = () => resolve();
+      image.onerror = () => resolve();
+      image.src = src;
+    }))).then(() => {
+      if (active) setIntroSlidesReady(true);
+    });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    if (!introSlidesReady || onboardingStep !== "intro" || !introSplashVisible) return;
     const slideOne = window.setTimeout(() => setIntroSlideIndex(1), 3333);
     const slideTwo = window.setTimeout(() => setIntroSlideIndex(2), 6666);
     const finish = window.setTimeout(() => setIntroSplashVisible(false), 10000);
@@ -388,7 +402,7 @@ export default function Home() {
       window.clearTimeout(slideTwo);
       window.clearTimeout(finish);
     };
-  }, [assetsReady, onboardingStep, introSplashVisible]);
+  }, [introSlidesReady, onboardingStep, introSplashVisible]);
   const [region, setRegion] = useState<string | null>(null);
   const [prosecutorOffice, setProsecutorOffice] = useState<(typeof PROSECUTOR_OFFICES)[number]["id"] | null>(null);
   const [rightsAdvocateMode, setRightsAdvocateMode] = useState(false);
@@ -1249,15 +1263,14 @@ export default function Home() {
     });
   }, [mapSvg, region]);
 
-  if (!assetsReady || (complaintAssetKey && loadedComplaintAssetKey !== complaintAssetKey)) return <main className="asset-loading-screen"><div className="asset-loading-card"><span className="live-dot" /><p>{complaintAssetKey ? "ПОДГОТОВКА ПРИЁМНОЙ" : "ПОДГОТОВКА АРХИВА"}</p><strong>{complaintAssetKey ? "Загрузка портрета посетителя и заднего фона…" : "Загрузка архивных материалов…"}</strong></div></main>;
-
   const musicPlayer = <MusicPlayer albumIndex={musicAlbum} trackIndex={musicTrack} isPlaying={musicPlaying} isOpen={musicOpen} onToggleOpen={() => setMusicOpen((value) => !value)} onTogglePlaying={() => setMusicPlaying((value) => !value)} onPrevious={() => changeMusicTrack(-1)} onNext={() => changeMusicTrack(1)} onSelectTrack={setMusicTrack} onSelectAlbum={changeMusicAlbum} />;
 
   if (onboardingStep === "intro" && introSplashVisible) return (
     <main className="startup-splash" role="status" aria-label="Заставка перед началом службы">
       <style>{`
-        .startup-splash{position:fixed;inset:0;z-index:1000;min-height:100dvh;overflow:hidden;background:#071018;color:#f4ead8}
-        .startup-splash .startup-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transform:scale(1.025);transition:opacity .9s ease-in-out;will-change:opacity,transform}
+        .startup-splash{position:fixed!important;inset:0!important;z-index:99999;width:100vw!important;height:100vh!important;height:100dvh!important;min-height:100vh!important;min-height:100dvh!important;max-width:none!important;margin:0!important;padding:0!important;overflow:hidden;box-sizing:border-box;isolation:isolate;background:#071018;color:#f4ead8}
+        .startup-splash,.startup-splash *{box-sizing:border-box}
+        .startup-splash .startup-image{position:absolute;inset:0;display:block;width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;object-fit:cover;object-position:center;opacity:0;transform:scale(1.025);transition:opacity .9s ease-in-out;will-change:opacity,transform}
         .startup-splash .startup-image.is-active{opacity:1;animation:startup-splash-zoom 3.55s ease-out both}
         .startup-splash-vignette{position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,10,16,.42),rgba(4,10,16,.05) 55%,rgba(4,10,16,.34)),linear-gradient(0deg,rgba(3,8,13,.78),transparent 30%,rgba(3,8,13,.12));pointer-events:none}
         .startup-splash-caption{position:absolute;left:clamp(22px,5vw,76px);right:clamp(22px,5vw,76px);bottom:clamp(26px,5vh,56px);max-width:560px;text-shadow:0 2px 14px rgba(0,0,0,.7)}
@@ -1271,7 +1284,7 @@ export default function Home() {
         @media(max-width:600px){.startup-splash .startup-image{object-position:center}.startup-splash-caption{bottom:calc(22px + env(safe-area-inset-bottom))}.startup-splash-kicker{font-size:8px}.startup-splash-title{font-size:11px;letter-spacing:.1em}}
         @media(prefers-reduced-motion:reduce){.startup-splash .startup-image{transition:none;animation:none!important;transform:none}.startup-splash-bar{animation:none;width:100%}}
       `}</style>
-      {STARTUP_SLIDES.map((src, index) => <img key={src} className={`startup-image ${introSlideIndex === index ? "is-active" : ""}`} src={src} alt="" aria-hidden="true" />)}
+      {STARTUP_SLIDES.map((src, index) => <img key={src} className={`startup-image ${introSlideIndex === index ? "is-active" : ""}`} src={src} alt="" aria-hidden="true" loading="eager" decoding="async" />)}
       <div className="startup-splash-vignette" />
       <div className="startup-splash-caption">
         <span className="startup-splash-kicker">ПРОКУРАТУРА · УЧЕБНАЯ СИМУЛЯЦИЯ</span>
@@ -1280,6 +1293,8 @@ export default function Home() {
       </div>
     </main>
   );
+
+  if (!assetsReady || (complaintAssetKey && loadedComplaintAssetKey !== complaintAssetKey)) return <main className="asset-loading-screen"><div className="asset-loading-card"><span className="live-dot" /><p>{complaintAssetKey ? "ПОДГОТОВКА ПРИЁМНОЙ" : "ПОДГОТОВКА АРХИВА"}</p><strong>{complaintAssetKey ? "Загрузка портрета посетителя и заднего фона…" : "Загрузка архивных материалов…"}</strong></div></main>;
 
   if (onboardingStep === "intro") return (
     <main className="onboarding-screen" style={{ backgroundImage: `linear-gradient(90deg, rgba(7,18,20,.95), rgba(7,18,20,.44)), url(${OFFICE_BG})` }}>
