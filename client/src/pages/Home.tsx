@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, BadgeCheck, Building2, CalendarClock, Camera, Check, ChevronRight, Factory, FileText, Gavel, Home as HomeIcon, MapPin, MapPinned, Maximize2, MessageSquare, Minimize2, Pause, Play, RotateCcw, Save, Scale, SkipBack, SkipForward, Stamp, TrainFront, Trees, UserRound, Users, Volume2, VolumeX, X, Music2 } from "lucide-react";
 import { TERRITORIAL_RECEPTION_DIALOGUES } from "../lib/territorialReceptionDialogues";
 import { PersonnelFileModal } from "../components/PersonnelFileModal";
+import { InspectionTacticalMap } from "../components/InspectionTacticalMap";
 
 const GAME_SAVE_KEY = "prosecutor-reception-07-save-v1";
 type StoredGame = { version: 1; savedAt: string; state: Record<string, unknown> };
@@ -441,6 +442,9 @@ export default function Home() {
   const [selectedCityEventId, setSelectedCityEventId] = useState<string | null>(null);
   const [openMaterial, setOpenMaterial] = useState<number | null>(null);
   const [reviewedMaterials, setReviewedMaterials] = useState<number[]>([]);
+  const [inspectionRoute, setInspectionRoute] = useState<number[]>([]);
+  const [inspectionSelectedPoint, setInspectionSelectedPoint] = useState(0);
+  const [inspectionReportOpen, setInspectionReportOpen] = useState(false);
   const activeCases = prosecutorOffice && PROFILE_CASES[prosecutorOffice] ? PROFILE_CASES[prosecutorOffice] : CASES;
   const current = activeCases[caseIndex] ?? activeCases[0];
   const activeMaterials = location === "inspection" ? (INSPECTION_POINTS[current.id] ?? current.materials) : current.materials;
@@ -524,22 +528,26 @@ export default function Home() {
   const next = () => {
     if (!feedback || gameOver) return;
     if (caseIndex >= activeCases.length - 1) setFinished(true);
-    else { setCaseIndex((value) => value + 1); setFeedback(null); setOpenMaterial(null); setReviewedMaterials([]); }
+    else { setCaseIndex((value) => value + 1); setFeedback(null); setOpenMaterial(null); setReviewedMaterials([]); setInspectionRoute([]); setInspectionSelectedPoint(0); setInspectionReportOpen(false); }
   };
 
-  const inspectMaterial = (index: number) => {
+  const inspectMaterial = (index: number, travelMinutes = 0) => {
     const alreadyReviewed = reviewedMaterials.includes(index);
-    if (!alreadyReviewed && hoursLeft < 0.5) return;
+    const timeCost = alreadyReviewed ? 0 : 0.5 + travelMinutes / 60;
+    if (!alreadyReviewed && hoursLeft < timeCost) return false;
     setOpenMaterial(index);
+    setInspectionSelectedPoint(index);
     if (!alreadyReviewed) {
-      const remaining = Math.max(0, Number((hoursLeft - 0.5).toFixed(1)));
+      const remaining = Math.max(0, Number((hoursLeft - timeCost).toFixed(2)));
       setReviewedMaterials((items) => [...items, index]);
+      setInspectionRoute((items) => items.includes(index) ? items : [...items, index]);
       setHoursLeft(remaining);
       if (remaining === 0) endDay();
     }
+    return true;
   };
 
-  const restart = () => { setDayNumber(1); setDayEnded(false); setPendingComplaints(0); setDailyComplaintIds([]); setSeenComplaintIds([]); setCarriedComplaintIds([]); setRegistryEntryMetadata({}); setRegistryDecisions({}); setRepeatComplaintIndex(null); setConsequenceQueue([]); setDayConsequences([]); setRightsAdvocateMode(false); setOnboardingStep("intro"); setRegion(null); setProsecutorOffice(null); setProsecutorModalOpen(false); setMilitaryNoticeOpen(false); setCharacter(null); setDraftName(""); setLocation(null); setCaseIndex(0); setComplaintIndex(0); setDayPlanOrder([]); setDayPlanOpen(false); setComplaintDecision(null); setScore(0); setCorrectDecisions(0); setTrust(3); setReputation({ quality: 3, leadership: 3, citizens: 3, risk: 1 }); setFeedback(null); setFinished(false); setGameOver(false); setGameOverReason("discipline"); setWrongDecisions(0); setRewardCounts(emptyCounts(REWARDS_GUIDANCE)); setDisciplineCounts(emptyCounts(DISCIPLINE_GUIDANCE)); setPersonnelArchiveEntries([]); setOpenMaterial(null); setReviewedMaterials([]); setOpenComplaintDoc(null); setReviewedComplaintDocs([]); setHoursLeft(8); setExtraRequested(false); };
+  const restart = () => { setDayNumber(1); setDayEnded(false); setPendingComplaints(0); setDailyComplaintIds([]); setSeenComplaintIds([]); setCarriedComplaintIds([]); setRegistryEntryMetadata({}); setRegistryDecisions({}); setRepeatComplaintIndex(null); setConsequenceQueue([]); setDayConsequences([]); setRightsAdvocateMode(false); setOnboardingStep("intro"); setRegion(null); setProsecutorOffice(null); setProsecutorModalOpen(false); setMilitaryNoticeOpen(false); setCharacter(null); setDraftName(""); setLocation(null); setCaseIndex(0); setComplaintIndex(0); setDayPlanOrder([]); setDayPlanOpen(false); setComplaintDecision(null); setScore(0); setCorrectDecisions(0); setTrust(3); setReputation({ quality: 3, leadership: 3, citizens: 3, risk: 1 }); setFeedback(null); setFinished(false); setGameOver(false); setGameOverReason("discipline"); setWrongDecisions(0); setRewardCounts(emptyCounts(REWARDS_GUIDANCE)); setDisciplineCounts(emptyCounts(DISCIPLINE_GUIDANCE)); setPersonnelArchiveEntries([]); setOpenMaterial(null); setReviewedMaterials([]); setInspectionRoute([]); setInspectionSelectedPoint(0); setInspectionReportOpen(false); setOpenComplaintDoc(null); setReviewedComplaintDocs([]); setHoursLeft(8); setExtraRequested(false); };
   const saveGame = () => {
     try {
       const state = {
@@ -549,7 +557,8 @@ export default function Home() {
         reviewedComplaintDocs, askedReceptionQuestions, activeReceptionQuestion, registryDecisions, registryEntryMetadata, hoursLeft, dayNumber,
         dayEnded, pendingComplaints, repeatComplaintIndex, consequenceQueue, dayConsequences, extraRequested, score,
         correctDecisions, trust, reputation, feedback, finished, gameOver, gameOverReason, wrongDecisions,
-        rewardCounts, disciplineCounts, personnelArchiveEntries, folderOpened, selectedCityDistrictId, selectedCityEventId, openMaterial, reviewedMaterials
+        rewardCounts, disciplineCounts, personnelArchiveEntries, folderOpened, selectedCityDistrictId, selectedCityEventId, openMaterial, reviewedMaterials,
+        inspectionRoute, inspectionSelectedPoint, inspectionReportOpen
       };
       window.localStorage.setItem(GAME_SAVE_KEY, JSON.stringify({ version: 1, savedAt: new Date().toISOString(), state }));
       setSavedGameAvailable(true);
@@ -629,6 +638,9 @@ export default function Home() {
     setSelectedCityEventId(getSaved<string | null>("selectedCityEventId", null));
     setOpenMaterial(getSaved<number | null>("openMaterial", null));
     setReviewedMaterials(getSaved("reviewedMaterials", []));
+    setInspectionRoute(getSaved("inspectionRoute", []));
+    setInspectionSelectedPoint(getSaved("inspectionSelectedPoint", 0));
+    setInspectionReportOpen(getSaved("inspectionReportOpen", false));
     setRegistryOpen(false);
     setDayPlanOpen(false);
     setCityMapOpen(false);
@@ -742,6 +754,7 @@ export default function Home() {
   const chooseLocation = (nextLocation: LocationId) => {
     startOfficeAmbience();
     setFolderOpened(false);
+    if (nextLocation === "inspection") setInspectionReportOpen(false);
     setLocation(nextLocation);
     setLoadingLocation(nextLocation);
     setRouteLoading(true);
@@ -1400,12 +1413,34 @@ export default function Home() {
         </section>
       </div>}
       {!folderOpened ? <section className="office-arrival-screen" aria-label="Рабочий кабинет">
-        <div className="office-arrival-copy"><span className="office-arrival-kicker">РАБОЧИЙ ДЕНЬ · {officeCalendarDay} {officeCalendarMonth} 2026</span><h2>{officeGreeting},<br /><em>{character.name}.</em></h2><p>{officeArrivalMessage}</p><div className="office-arrival-status"><span className="live-dot" /> {location === "reception" ? "ПРИЁМНАЯ ГОТОВА К РАБОТЕ" : "МАТЕРИАЛЫ ПРОВЕРКИ ПОДГОТОВЛЕНЫ"}</div>{location === "reception" && <div className="office-arrival-incoming"><span>НОВЫЕ ЗАЯВЛЕНИЯ</span><strong>{dailyComplaintIds.length}</strong><small>сегодня</small>{carriedComplaintIds.length > 0 && <em>+{carriedComplaintIds.length} перенесено</em>}</div>}</div>
-        <button type="button" className="office-arrival-folder" onClick={() => setFolderOpened(true)} aria-label="Открыть папку с входящими материалами"><span className="office-arrival-folder-tab" /><span className="office-arrival-folder-head"><span>ВХОДЯЩИЕ МАТЕРИАЛЫ</span><small>КАНЦЕЛЯРИЯ · 2026</small></span><span className="office-arrival-folder-title">{location === "reception" ? "Обращение гражданина" : "Материалы проверки"}</span><span className="office-arrival-folder-number">№ {String(location === "reception" ? complaintIndex + 1 : caseIndex + 1).padStart(3,"0")}</span><span className="office-arrival-folder-action">ОТКРЫТЬ ПАПКУ <ChevronRight size={15} /></span></button>
-        <div className="office-arrival-bottom"><span>ПРИЁМНАЯ № 07</span><span>НАЖМИТЕ НА ПАПКУ, ЧТОБЫ НАЧАТЬ РАБОТУ</span><span>СМЕНА {dayNumber} · {officeClockLabel}</span></div>
+        <div className="office-arrival-copy"><span className="office-arrival-kicker">РАБОЧИЙ ДЕНЬ · {officeCalendarDay} {officeCalendarMonth} 2026</span><h2>{officeGreeting},<br /><em>{character.name}.</em></h2><p>{officeArrivalMessage}</p><div className="office-arrival-status"><span className="live-dot" /> {location === "reception" ? "ПРИЁМНАЯ ГОТОВА К РАБОТЕ" : "МАРШРУТ ВЫЕЗДНОЙ ПРОВЕРКИ ПОДГОТОВЛЕН"}</div>{location === "reception" && <div className="office-arrival-incoming"><span>НОВЫЕ ЗАЯВЛЕНИЯ</span><strong>{dailyComplaintIds.length}</strong><small>сегодня</small>{carriedComplaintIds.length > 0 && <em>+{carriedComplaintIds.length} перенесено</em>}</div>}</div>
+        <button type="button" className="office-arrival-folder" onClick={() => setFolderOpened(true)} aria-label="Открыть папку с входящими материалами"><span className="office-arrival-folder-tab" /><span className="office-arrival-folder-head"><span>{location === "reception" ? "ВХОДЯЩИЕ МАТЕРИАЛЫ" : "ПОЛЕВОЕ ЗАДАНИЕ"}</span><small>{location === "reception" ? "КАНЦЕЛЯРИЯ · 2026" : "ВЫЕЗДНАЯ ГРУППА · 2026"}</small></span><span className="office-arrival-folder-title">{location === "reception" ? "Обращение гражданина" : "Тактическая карта выезда"}</span><span className="office-arrival-folder-number">№ {String(location === "reception" ? complaintIndex + 1 : caseIndex + 1).padStart(3,"0")}</span><span className="office-arrival-folder-action">{location === "inspection" ? "ОТКРЫТЬ КАРТУ" : "ОТКРЫТЬ ПАПКУ"} <ChevronRight size={15} /></span></button>
+        <div className="office-arrival-bottom"><span>ПРИЁМНАЯ № 07</span><span>{location === "inspection" ? "НАЖМИТЕ, ЧТОБЫ ОТКРЫТЬ ТАКТИЧЕСКУЮ КАРТУ" : "НАЖМИТЕ НА ПАПКУ, ЧТОБЫ НАЧАТЬ РАБОТУ"}</span><span>СМЕНА {dayNumber} · {officeClockLabel}</span></div>
         <button type="button" className={`office-drawer-trigger ${officeDrawerOpen ? "active" : ""}`} onClick={() => setOfficeDrawerOpen((value) => !value)} aria-expanded={officeDrawerOpen}><span className="office-drawer-handle" /><span>ЯЩИК СТОЛА</span><ChevronRight size={13} /></button>
         {officeDrawerOpen && <div className="office-drawer-overlay" onMouseDown={(event) => event.target === event.currentTarget && setOfficeDrawerOpen(false)}><section className="office-drawer-card" role="dialog" aria-modal="true" aria-labelledby="office-drawer-title"><div className="office-drawer-heading"><span>ЛИЧНЫЕ ВЕЩИ · КАНЦЕЛЯРИЯ</span><button type="button" onClick={() => setOfficeDrawerOpen(false)} aria-label="Закрыть ящик"><X size={16} /></button></div><h3 id="office-drawer-title">В ящике стола</h3><div className="office-drawer-items"><div><FileText size={17} /><span><b>Старая памятка</b><small>Проверить входящие до конца смены</small></span></div><div><Stamp size={17} /><span><b>Печать канцелярии</b><small>На месте · штемпельная подушка подсохла</small></span></div><div><MessageSquare size={17} /><span><b>Записка коллеги</b><small>«Журнал верни до ухода. Завтра ранний выезд»</small></span></div></div><div className="office-drawer-foot"><span>СЛУЖЕБНАЯ ЗАПИСКА</span><b>СМЕНА · {officeClockLabel}</b></div></section></div>}
-      </section> : <section className="workspace">
+      </section> : <section className={location === "inspection" ? "inspection-workspace" : "workspace"}>
+        {location === "inspection" ? <InspectionTacticalMap
+          caseFile={current}
+          materials={activeMaterials}
+          visited={reviewedMaterials}
+          route={inspectionRoute}
+          selectedPoint={inspectionSelectedPoint}
+          reportOpen={inspectionReportOpen || Boolean(feedback)}
+          remainingHours={hoursLeft}
+          canDecide={canDecide}
+          feedback={feedback}
+          finished={finished}
+          score={score}
+          totalCases={activeCases.length}
+          trust={trust}
+          rating={rating}
+          onSelectPoint={setInspectionSelectedPoint}
+          onInspectPoint={inspectMaterial}
+          onOpenReport={() => setInspectionReportOpen(true)}
+          onDecision={decide}
+          onNext={next}
+          onRestart={restart}
+        /> : <>
         <aside className="briefing panel">
           <div className="rule-row"><span>{location === "reception" ? "Обращений в очереди" : "Дел в очереди"}</span><b>{location === "reception" ? Math.max(0, activeComplaints.length - complaintIndex) : activeCases.length - Math.min(caseIndex, activeCases.length - 1)}</b></div>
           <div className="rule-row"><span>Доверие канцелярии</span><b>{trust} / 5</b></div>
@@ -1443,6 +1478,7 @@ export default function Home() {
             </>
           )}
         </section>}
+        </>}
       </section>}
 
       {folderOpened && <footer className="footerbar"><div></div><div className="footer-stats"><Stat label="ВЕРНЫЕ РЕШЕНИЯ" value={`${correctDecisions}/${location === "reception" ? activeComplaints.length : activeCases.length}`} tone={correctDecisions > 0 ? "good" : "default"} /><Stat label="ДОВЕРИЕ" value={`${trust}/5`} tone={trust < 2 ? "bad" : "default"} /><Stat label="РЕПУТАЦИЯ" value={`${reputation.quality}/5`} tone={reputation.quality < 2 ? "bad" : reputation.quality >= 4 ? "good" : "default"} /><Stat label="СТАТУС" value={finished ? "ЗАКРЫТО" : feedback ? "ПРОВЕРКА" : "ОЖИДАНИЕ"} /></div></footer>}
