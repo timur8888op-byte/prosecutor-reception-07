@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#81918b"/><stop offset="1" stop-color="#d2c9a9"/></linearGradient><linearGradient id="ground" x2="0" y2="1"><stop stop-color="#66704f"/><stop offset="1" stop-color="#283b30"/></linearGradient></defs>
+<rect width="1600" height="900" fill="url(#sky)"/><path d="M0 330Q250 240 480 330T950 300T1600 320V900H0Z" fill="#657b63"/><path d="M0 450Q300 370 600 450T1150 420T1600 440V900H0Z" fill="#435d48"/>
+<g fill="#284b37"><path d="M20 500l100-310 100 310zM145 520l95-360 100 360zM310 500l100-320 100 320zM480 520l110-370 110 370zM660 500l95-315 95 315zM810 510l115-365 115 365zM1020 500l100-320 100 320zM1220 520l110-370 110 370zM1420 500l90-300 90 300z"/></g>
+<g fill="#527b55"><path d="M50 520l70-210 70 210zM210 530l75-245 75 245zM420 535l80-240 80 240zM700 520l70-220 70 220zM930 525l80-230 80 230zM1160 525l80-245 80 245zM1390 520l70-225 70 225z"/></g>
+<path d="M0 630Q350 540 650 645T1100 640T1600 600V900H0Z" fill="url(#ground)"/>
+<path d="M-30 800Q280 680 550 735T1030 740T1640 660" fill="none" stroke="#88765a" stroke-width="95"/><path d="M-30 800Q280 680 550 735T1030 740T1640 660" fill="none" stroke="#4c4a3d" stroke-width="6" stroke-dasharray="45 32"/>
+<g fill="#6a452e" stroke="#b18b5c" stroke-width="8"><path d="M320 620l55-150 55 150z"/><path d="M560 690l45-120 45 120z"/><path d="M880 670l60-165 60 165z"/></g>
+<g fill="#9a6b46"><path d="M180 735l160-10 28 30-170 14zM420 765l210-15 25 30-210 18zM1130 690l220-18 28 34-215 22z"/></g>
+<g fill="#27312b" stroke="#b9ab8a" stroke-width="5"><path d="M1090 505h230l70 72v78h-300z"/><rect x="1140" y="525" width="95" height="65" fill="#71817e"/><circle cx="1155" cy="660" r="43"/><circle cx="1335" cy="660" r="43"/></g>
+<g fill="#d3c49e" opacity=".5"><circle cx="120" cy="675" r="4"/><circle cx="220" cy="640" r="5"/><circle cx="770" cy="730" r="4"/><circle cx="1470" cy="730" r="6"/></g>
+<path d="M0 870Q350 790 700 860T1600 820V900H0Z" fill="#1c2a21" opacity=".8"/>
+</svg>
