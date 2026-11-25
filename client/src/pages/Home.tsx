@@ -1296,8 +1296,8 @@ export default function Home() {
   );
 
   return (
-    <main className={`game-shell office-theme-${prosecutorOffice ?? "territorial"}`} data-office-time={officeTimePhase} style={{ backgroundImage: `linear-gradient(90deg, rgba(7,18,20,.54) 0%, rgba(7,18,20,.38) 33%, rgba(7,18,20,.08) 72%, rgba(7,18,20,.22) 100%), url(${PROFILE_BACKGROUNDS[prosecutorOffice ?? ""] ?? OFFICE_BG})` }}>
-      <div className="office-atmosphere" aria-hidden="true"><span className="office-window-scene"><i className="office-window-headlights" /><i className="office-window-curtain" /></span><span className="office-car-reflection" /><span className="office-lamp-glow" /></div>{musicPlayer}<div className="grain" />
+    <main className={`game-shell office-theme-${prosecutorOffice ?? "territorial"}`} data-office-time={officeTimePhase} style={{ backgroundImage: `url(${PROFILE_BACKGROUNDS[prosecutorOffice ?? ""] ?? OFFICE_BG})` }}>
+      {musicPlayer}
       {gameOver && <div className="game-over-backdrop" role="dialog" aria-modal="true" aria-labelledby="game-over-title"><section className="game-over-card"><span className="eyebrow">СЛУЖЕБНОЕ РЕШЕНИЕ · {gameOverReason === "bribe" ? "КОРРУПЦИОННОЕ ПРЕСТУПЛЕНИЕ" : "ДИСЦИПЛИНА"}</span><h2 id="game-over-title">Игра окончена</h2><p>{gameOverReason === "bribe" ? "Вы были пойманы за получением взятки при проведении ОРМ «Проверочная закупка». В соответствии со ст. 114 УПК РФ и ст. 43 ФЗ «О прокуратуре Российской Федерации»." : "Вы были уволены в связи с несовместимостью с дальнейшим прохождением службы в силу наличия большого количества дисциплинарных взысканий."}</p><div className="game-over-status">Статус: <strong>{gameOverReason === "bribe" ? "получение взятки · служба прекращена" : "увольнение из органов прокуратуры"}</strong></div><button className="primary-button" onClick={returnToMainMenu}><RotateCcw size={16} /> Вернуться в главное меню</button></section></div>}
       <header className={`topbar ${folderOpened ? "topbar-with-return" : ""}`}>
         <div className="brand"><div className="brand-mark"><Scale size={18} /></div><div><p>ПРОКУРАТУРА</p><h1>Приёмная № 07</h1></div></div>
