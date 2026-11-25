@@ -18,7 +18,7 @@ const readStoredGame = (): StoredGame | null => {
 };
 
 const OFFICE_BG = "/manus-storage/prosecutor-night-office-new.png";
-const PROSECUTOR_OFFICE_BG = "/manus-storage/prosecutor-office-territorial-hq.avif";
+const PROSECUTOR_OFFICE_BG = "/manus-storage/prosecutor-office-reference_7e58c04a.png";
 const PROFILE_BACKGROUNDS: Record<string, string> = { territorial: PROSECUTOR_OFFICE_BG, executive: "/manus-storage/executive-office-bg_aa1818c9.png", environmental: "/manus-storage/environmental-office-bg_a009f425.png", military: "/manus-storage/military-office-bg-bright_f71bdfab.png", transport: OFFICE_BG };
 const PROFILE_LOADING_BACKGROUNDS: Record<string, string> = { territorial: "/manus-storage/loading-territorial-blue_98a4219b.png", executive: "/manus-storage/loading-corrections-red_aadd26a9.png", environmental: "/manus-storage/loading-environment-green_619dd58d.png", military: "/manus-storage/loading-military-darkgreen_b5a432ca.png", transport: "/manus-storage/loading-transport-orange_a567cded.png" };
 const PROFILE_LOADING_TIPS: Record<string, string> = {

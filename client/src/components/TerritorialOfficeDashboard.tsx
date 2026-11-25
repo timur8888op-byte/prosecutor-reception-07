@@ -37,7 +37,7 @@ export function TerritorialOfficeDashboard({
       <footer className="territorial-dashboard-footer">
         <div className="territorial-dashboard-identity">
           <span className="territorial-dashboard-avatar"><UserRound size={17}/></span>
-          <span><small>СТАРШИЙ ПОМОЩНИК ПРОКУРОРА</small><b>{name}</b></span>
+          <span><small>ПОМОЩНИК</small><b>{name}</b></span>
         </div>
         <div className="territorial-dashboard-divider" />
         <div className="territorial-dashboard-meta"><span>СТАЖ</span><b>День {dayNumber} · {dateLabel}</b></div>
