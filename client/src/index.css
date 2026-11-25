@@ -5052,3 +5052,328 @@ html, body, #root { width: 100%; min-width: 100%; min-height: 100%; height: 100%
     margin-left: auto;
   }
 }
+/* TERRITORIAL PROFILE · dedicated complaints workspace, not the legacy generic shell */
+.game-shell.territorial-reception-active {
+  height:100dvh;
+  min-height:100dvh;
+  overflow:hidden;
+  background-position:center center !important;
+  background-size:cover !important;
+}
+.game-shell.territorial-reception-active::after {
+  position:fixed;
+  background:linear-gradient(180deg,rgba(5,12,19,.38),rgba(5,12,19,.1) 24%,rgba(5,12,19,.22) 72%,rgba(5,12,19,.46));
+  pointer-events:none;
+}
+.game-shell.territorial-reception-active > .topbar {
+  position:relative;
+  z-index:10;
+  display:flex;
+  flex:0 0 78px;
+  width:100%;
+  max-width:none;
+  height:78px;
+  min-height:78px;
+  margin:0;
+  padding:0 28px;
+  gap:20px;
+  background:rgba(9,16,25,.97);
+  border-bottom:1px solid rgba(205,168,111,.26);
+  box-shadow:0 8px 28px rgba(0,0,0,.22);
+}
+.game-shell.territorial-reception-active .brand {
+  flex:0 0 48px;
+  width:48px;
+  min-width:48px;
+  margin:0;
+}
+.game-shell.territorial-reception-active .brand > div:nth-child(2) { display:none !important; }
+.game-shell.territorial-reception-active .brand-mark {
+  display:grid;
+  place-items:center;
+  width:43px;
+  height:50px;
+  color:#d9ae6c;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.game-shell.territorial-reception-active .brand-mark svg { width:31px; height:38px; stroke-width:1.3; }
+.game-shell.territorial-reception-active .territorial-dashboard-nav {
+  display:flex;
+  flex:1 1 auto;
+  min-width:0;
+  justify-content:flex-start;
+  gap:clamp(3px,.55vw,10px);
+}
+.game-shell.territorial-reception-active .territorial-dashboard-nav button {
+  min-height:42px;
+  padding:0 clamp(7px,.85vw,14px);
+  gap:7px;
+  font-size:clamp(9px,.72vw,11px);
+}
+.game-shell.territorial-reception-active .territorial-dashboard-nav button.active {
+  color:#f3e3c1;
+  background:rgba(180,137,76,.14);
+  border-color:rgba(205,166,104,.48);
+}
+.game-shell.territorial-reception-active .territorial-dashboard-topmeta {
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  gap:10px;
+  padding-left:16px;
+  border-left:1px solid rgba(211,176,119,.22);
+}
+.game-shell.territorial-reception-active .territorial-dashboard-topmeta > span {
+  color:rgba(236,231,220,.68);
+  font:9px 'IBM Plex Mono';
+}
+.game-shell.territorial-reception-active .territorial-dashboard-topmeta b {
+  color:#f4e8d2;
+  font:600 18px Georgia,serif;
+}
+.game-shell.territorial-reception-active .territorial-dashboard-topmeta button {
+  display:grid;
+  place-items:center;
+  width:37px;
+  height:37px;
+  color:#dbb77a;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(205,166,104,.3);
+  border-radius:7px;
+}
+.game-shell.territorial-reception-active .profile-chip,
+.game-shell.territorial-reception-active .shift,
+.game-shell.territorial-reception-active .office-scene-status,
+.game-shell.territorial-reception-active .work-clock,
+.game-shell.territorial-reception-active .city-map-open-button,
+.game-shell.territorial-reception-active .day-plan-open-button,
+.game-shell.territorial-reception-active .registry-open-button,
+.game-shell.territorial-reception-active .office-return-button,
+.game-shell.territorial-reception-active .route-switch-button,
+.game-shell.territorial-reception-active .end-day-button,
+.game-shell.territorial-reception-active .save-game-icon,
+.game-shell.territorial-reception-active .top-menu-icon,
+.game-shell.territorial-reception-active .save-notice { display:none !important; }
+.territorial-reception-workspace {
+  position:relative;
+  z-index:1;
+  display:flex !important;
+  flex:1 1 auto;
+  flex-direction:column;
+  width:min(1540px,calc(100% - 52px));
+  max-width:1540px;
+  min-height:0;
+  margin:0 auto;
+  padding:20px 0 18px;
+  overflow:hidden;
+}
+.game-shell.territorial-reception-active .briefing { display:none !important; }
+.game-shell.territorial-reception-active .complaint-area {
+  display:flex;
+  flex:1 1 auto;
+  flex-direction:column;
+  width:100%;
+  min-height:0;
+  height:100%;
+  max-height:100%;
+  padding:22px clamp(18px,2vw,30px);
+  overflow:hidden;
+  background-position:center 42%;
+  background-size:cover;
+  border:1px solid rgba(212,178,122,.34);
+  border-radius:8px;
+  box-shadow:0 22px 58px rgba(0,0,0,.32),inset 0 0 0 1px rgba(255,255,255,.045);
+}
+.game-shell.territorial-reception-active .complaint-area::before {
+  backdrop-filter:none;
+  background:linear-gradient(100deg,rgba(7,16,20,.82),rgba(7,16,20,.52) 46%,rgba(7,16,20,.62));
+}
+.game-shell.territorial-reception-active .complaint-meta {
+  position:relative;
+  z-index:1;
+  flex:0 0 auto;
+  margin:0 0 16px;
+  color:rgba(245,235,216,.72);
+  font-size:8px;
+  letter-spacing:.12em;
+}
+.game-shell.territorial-reception-active .complaint-meta span:first-child {
+  color:#e5bd7c;
+}
+.game-shell.territorial-reception-active .complaint-layout {
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:minmax(145px,190px) minmax(0,1fr);
+  flex:1 1 auto;
+  min-height:0;
+  height:100%;
+  gap:clamp(14px,1.5vw,24px);
+  align-items:stretch;
+}
+.game-shell.territorial-reception-active .complaint-portrait {
+  align-self:end;
+  width:100%;
+  max-width:190px;
+  margin-bottom:8px;
+}
+.game-shell.territorial-reception-active .complaint-portrait img {
+  width:100%;
+  height:clamp(180px,27vh,270px);
+  max-height:270px;
+  object-fit:cover;
+  filter:none;
+}
+.game-shell.territorial-reception-active .complaint-card {
+  display:flex;
+  flex-direction:column;
+  align-self:stretch;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  min-height:0;
+  height:100%;
+  max-height:100%;
+  padding:clamp(16px,1.6vw,24px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  background:linear-gradient(145deg,rgba(244,237,222,.97),rgba(223,213,194,.97));
+  border:1px solid rgba(255,248,229,.65);
+  border-radius:5px;
+  box-shadow:0 18px 48px rgba(0,0,0,.3),inset 0 0 0 4px rgba(255,255,255,.12);
+}
+.game-shell.territorial-reception-active .complaint-card h2 {
+  margin:9px 0 10px;
+  font-size:clamp(20px,1.75vw,27px);
+}
+.game-shell.territorial-reception-active .complaint-speech {
+  font-size:12px;
+  line-height:1.58;
+}
+.game-shell.territorial-reception-active .complaint-request {
+  margin-top:12px;
+  padding:9px 12px;
+}
+.game-shell.territorial-reception-active .complaint-request p { font-size:11px; }
+.game-shell.territorial-reception-active .complaint-documents {
+  margin-top:12px;
+  padding-top:10px;
+}
+.game-shell.territorial-reception-active .complaint-documents .material-tabs {
+  gap:6px;
+  margin-top:7px;
+}
+.game-shell.territorial-reception-active .complaint-documents .material-tabs button {
+  padding:7px 8px;
+  font-size:9px;
+}
+.game-shell.territorial-reception-active .extra-request {
+  margin-top:8px;
+  padding:8px 10px;
+}
+.game-shell.territorial-reception-active .complaint-actions { margin-top:12px; }
+.game-shell.territorial-reception-active .complaint-action { padding:10px; }
+.game-shell.territorial-reception-active .complaint-card .next-button { margin-top:12px; }
+.game-shell.territorial-reception-active .footerbar {
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex:0 0 46px;
+  width:100%;
+  min-height:46px;
+  max-width:none;
+  margin:0;
+  padding:0 28px;
+  background:rgba(7,15,22,.93);
+  border-top:1px solid rgba(208,170,111,.24);
+}
+.game-shell.territorial-reception-active .footer-stats {
+  width:100%;
+  justify-content:flex-end;
+  gap:clamp(12px,2vw,28px);
+}
+.game-shell.territorial-reception-active .footer-stats .stat span { font-size:8px; }
+.game-shell.territorial-reception-active .footer-stats .stat strong { font-size:10px; }
+@media (max-width:1050px) {
+  .game-shell.territorial-reception-active > .topbar { padding:0 14px; gap:8px; }
+  .game-shell.territorial-reception-active .territorial-dashboard-nav { gap:1px; }
+  .game-shell.territorial-reception-active .territorial-dashboard-nav button { padding:0 7px; font-size:9px; }
+  .territorial-reception-workspace { width:calc(100% - 28px); }
+}
+@media (max-width:760px) {
+  .game-shell.territorial-reception-active {
+    height:auto;
+    min-height:100dvh;
+    overflow:visible;
+  }
+  .game-shell.territorial-reception-active > .topbar {
+    position:relative;
+    flex:0 0 auto;
+    min-height:70px;
+    height:auto;
+    flex-wrap:wrap;
+    padding:8px 12px;
+    gap:7px;
+  }
+  .game-shell.territorial-reception-active .brand { flex:0 0 40px; width:40px; }
+  .game-shell.territorial-reception-active .brand-mark { width:38px; height:42px; }
+  .game-shell.territorial-reception-active .territorial-dashboard-nav {
+    order:3;
+    flex:1 0 100%;
+    width:100%;
+    justify-content:space-between;
+    overflow-x:auto;
+  }
+  .game-shell.territorial-reception-active .territorial-dashboard-nav button {
+    min-height:34px;
+    padding:0 6px;
+    font-size:8px;
+  }
+  .game-shell.territorial-reception-active .territorial-dashboard-topmeta { margin-left:auto; padding-left:8px; }
+  .game-shell.territorial-reception-active .territorial-dashboard-topmeta > span { display:none; }
+  .territorial-reception-workspace {
+    width:calc(100% - 20px);
+    min-height:0;
+    overflow:visible;
+    padding:12px 0;
+  }
+  .game-shell.territorial-reception-active .complaint-area {
+    min-height:0;
+    height:auto;
+    max-height:none;
+    padding:15px;
+    overflow:visible;
+  }
+  .game-shell.territorial-reception-active .complaint-layout {
+    grid-template-columns:1fr;
+    height:auto;
+    overflow:visible;
+  }
+  .game-shell.territorial-reception-active .complaint-portrait {
+    display:grid;
+    grid-template-columns:92px 1fr;
+    align-items:center;
+    gap:12px;
+    max-width:none;
+    margin:0;
+  }
+  .game-shell.territorial-reception-active .complaint-portrait img {
+    width:92px;
+    height:116px;
+  }
+  .game-shell.territorial-reception-active .complaint-card {
+    height:auto;
+    max-height:none;
+    overflow:visible;
+    padding:16px;
+  }
+  .game-shell.territorial-reception-active .footerbar {
+    flex:0 0 auto;
+    min-height:42px;
+    padding:8px 12px;
+  }
+  .game-shell.territorial-reception-active .footer-stats { flex-wrap:wrap; justify-content:space-between; gap:8px; }
+}
