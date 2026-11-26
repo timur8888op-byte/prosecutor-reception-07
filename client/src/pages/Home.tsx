@@ -556,7 +556,7 @@ export default function Home() {
   const next = () => {
     if (!feedback || gameOver) return;
     if (caseIndex >= activeCases.length - 1) setFinished(true);
-    else { setCaseIndex((value) => value + 1); setFeedback(null); setOpenMaterial(null); setReviewedMaterials([]); setInspectionRoute([]); setInspectionSelectedPoint(0); setInspectionReportOpen(false); }
+    else { setCaseIndex((value) => value + 1); setFeedback(null); setOpenMaterial(null); setReviewedMaterials([]); }
   };
 
   const inspectMaterial = (index: number, travelMinutes = 0) => {
@@ -564,11 +564,9 @@ export default function Home() {
     const timeCost = alreadyReviewed ? 0 : 0.5 + travelMinutes / 60;
     if (!alreadyReviewed && hoursLeft < timeCost) return false;
     setOpenMaterial(index);
-    setInspectionSelectedPoint(index);
     if (!alreadyReviewed) {
       const remaining = Math.max(0, Number((hoursLeft - timeCost).toFixed(2)));
       setReviewedMaterials((items) => [...items, index]);
-      setInspectionRoute((items) => items.includes(index) ? items : [...items, index]);
       setHoursLeft(remaining);
       if (remaining === 0) endDay();
     }
