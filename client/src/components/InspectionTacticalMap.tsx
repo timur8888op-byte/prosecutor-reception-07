@@ -1,302 +1,225 @@
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, Compass, FileText, Flag, MapPin, Navigation, Route, ShieldCheck, X } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, ClipboardCheck, MapPin, X } from "lucide-react";
 
-type FieldMaterial = { label: string; text: string };
-type Decision = "prosecute" | "dismiss";
-type Feedback = { good: boolean; text: string; decision: Decision } | null;
-type PointLayout = { zone: string; x: number; y: number; task: string };
-type SceneKind = "construction" | "forest" | "archive" | "roadside" | "agriculture" | "river" | "facility";
-
-type InspectionCase = {
-  id: string;
-  number: string;
-  category: string;
-  person: string;
-  place: string;
-  summary: string;
-  evidence: string;
-  stage: string;
-  explanation: string;
+export type PlaygroundInspectionObjectId = "swings" | "surface" | "bench";
+export type PlaygroundInspectionAnswer = "yes" | "no";
+export type PlaygroundInspectionStage = "objects" | "laws" | "constitution" | "complete";
+export type PlaygroundInspectionProgress = {
+  stage: PlaygroundInspectionStage;
+  selectedObject: PlaygroundInspectionObjectId;
+  answers: Partial<Record<PlaygroundInspectionObjectId, PlaygroundInspectionAnswer>>;
+  laws: string[];
+  constitution: number[];
 };
-
 type Props = {
-  territorialFullscreen: boolean;
-  onBackToCabinet: () => void;
-  caseFile: InspectionCase;
-  materials: FieldMaterial[];
-  visited: number[];
-  route: number[];
-  selectedPoint: number;
-  reportOpen: boolean;
-  remainingHours: number;
-  canDecide: boolean;
-  feedback: Feedback;
-  finished: boolean;
-  score: number;
-  totalCases: number;
-  trust: number;
-  rating: string;
-  onSelectPoint: (index: number) => void;
-  onInspectPoint: (index: number, travelMinutes: number) => void;
-  onOpenReport: () => void;
-  onDecision: (decision: Decision) => void;
-  onNext: () => void;
-  onRestart: () => void;
+  progress: PlaygroundInspectionProgress;
+  onProgressChange: (progress: PlaygroundInspectionProgress) => void;
+  onBackToComplaint: () => void;
+  onComplete: () => void;
 };
 
-const DEFAULT_LAYOUT: PointLayout[] = [
-  { zone: "Северный сектор", x: 22, y: 26, task: "Первичный осмотр и фиксация обстоятельств" },
-  { zone: "Центральный сектор", x: 74, y: 27, task: "Проверка документов и фактического состояния" },
-  { zone: "Южный сектор", x: 52, y: 76, task: "Уточнение обстоятельств и получение объяснений" },
-  { zone: "Западный сектор", x: 27, y: 72, task: "Дополнительное сопоставление сведений" },
-  { zone: "Контрольная точка", x: 80, y: 72, task: "Контрольный осмотр" },
+const PLAYGROUND_IMAGE = "/manus-storage/playground-inspection-scene.svg";
+const OBJECTS = [
+  { id: "swings" as const, name: "Качели", short: "КАЧЕЛИ", fact: "На качелях отсутствуют одиночные гибкие элементы.", answer: "yes" as const, note: "Да. Нарушены требования ГОСТ Р 52167-2012 «Оборудование и покрытия детских игровых площадок. Безопасность конструкции и методы испытания качелей. Общие требования».", left: "21%", top: "48%", crop: "left center" },
+  { id: "surface" as const, name: "Покрытие площадки", short: "ПОКРЫТИЕ", fact: "На площадке отсутствует ударопоглощающее покрытие.", answer: "yes" as const, note: "Да. Нарушены требования ГОСТ Р ЕН 1177-2013 «Покрытия игровых площадок ударопоглощающие».", left: "54%", top: "73%", crop: "center center" },
+  { id: "bench" as const, name: "Скамейка", short: "СКАМЕЙКА", fact: "Скамейка покрашена в синий цвет.", answer: "no" as const, note: "Нет. Сам по себе синий цвет скамейки не является нарушением.", left: "84%", top: "64%", crop: "right center" },
+];
+const FEDERAL_LAWS = [
+  { id: "323", title: "323-ФЗ", description: "«Об основах охраны здоровья граждан в Российской Федерации»" },
+  { id: "329", title: "329-ФЗ", description: "«О физической культуре и спорте в Российской Федерации»" },
+  { id: "33", title: "33-ФЗ", description: "«Об общих принципах организации местного самоуправления в единой системе публичной власти»" },
 ];
 
-const CASE_LAYOUTS: Record<string, { kind: SceneKind; title: string; subtitle: string; locations: PointLayout[] }> = {
-  "01": {
-    kind: "construction", title: "Строительная площадка", subtitle: "Многоквартирный дом · капитальный ремонт",
-    locations: [
-      { zone: "Кровля, секция А", x: 28, y: 27, task: "Сверить фактическое покрытие с проектной спецификацией и маркировкой" },
-      { zone: "Склад материалов", x: 75, y: 34, task: "Осмотреть остатки, упаковки и сопроводительные обозначения" },
-      { zone: "Производственный участок", x: 51, y: 76, task: "Получить объяснения прораба о замене материала" },
-    ],
-  },
-  "02": {
-    kind: "forest", title: "Лесной квартал № 14", subtitle: "Лесничество · предполагаемая незаконная рубка",
-    locations: [
-      { zone: "Делянка", x: 50, y: 27, task: "Осмотреть пни, породы деревьев и границы участка" },
-      { zone: "Технологическая дорога", x: 76, y: 70, task: "Зафиксировать колеи, следы техники и направление вывозки" },
-      { zone: "Пост лесничества", x: 22, y: 72, task: "Уточнить сведения о разрешении и получить объяснения егеря" },
-    ],
-  },
-  "03": {
-    kind: "archive", title: "Отделение социальных выплат", subtitle: "Приём заявлений · архивная проверка",
-    locations: [
-      { zone: "Окно приёма", x: 24, y: 40, task: "Установить обстоятельства подачи заявления и состав документов" },
-      { zone: "Архив записей", x: 76, y: 25, task: "Сопоставить реквизиты с архивными сведениями" },
-      { zone: "Зона ожидания", x: 61, y: 75, task: "Получить объяснения получателя выплаты" },
-    ],
-  },
-  "04": {
-    kind: "roadside", title: "Место остановки автомобиля", subtitle: "Дорожный участок · служебный патруль",
-    locations: [
-      { zone: "Место остановки", x: 50, y: 23, task: "Сопоставить обстановку и расположение участников со схемой" },
-      { zone: "Патрульный автомобиль", x: 76, y: 72, task: "Осмотреть салон и изучить доступную видеозапись" },
-      { zone: "Пост инспектора", x: 22, y: 68, task: "Получить объяснения инспектора о последовательности событий" },
-    ],
-  },
-  "05": {
-    kind: "agriculture", title: "Агрокомплекс", subtitle: "Производственная территория · охрана труда и оплата",
-    locations: [
-      { zone: "Пост охраны", x: 23, y: 61, task: "Сверить фактический график дежурств и журнал поста" },
-      { zone: "Административный корпус", x: 72, y: 25, task: "Сопоставить табель, график и расчётные листки" },
-      { zone: "Бытовой корпус", x: 67, y: 76, task: "Получить самостоятельные объяснения работников" },
-    ],
-  },
-};
+export function InspectionTacticalMap({ progress, onProgressChange, onBackToComplaint, onComplete }: Props) {
+  const [error, setError] = useState("");
+  const selected = OBJECTS.find((item) => item.id === progress.selectedObject) ?? OBJECTS[0];
+  const answer = progress.answers[selected.id];
+  const correct = answer === selected.answer;
+  const checked = OBJECTS.filter((item) => progress.answers[item.id] === item.answer).length;
+  const update = (patch: Partial<PlaygroundInspectionProgress>) => onProgressChange({ ...progress, ...patch });
+  const answerObject = (value: PlaygroundInspectionAnswer) => {
+    update({ answers: { ...progress.answers, [selected.id]: value } });
+    setError("");
+  };
+  const resetAnswer = () => {
+    const answers = { ...progress.answers };
+    delete answers[selected.id];
+    update({ answers });
+    setError("");
+  };
+  const toggleLaw = (id: string) => {
+    update({ laws: progress.laws.includes(id) ? progress.laws.filter((v) => v !== id) : [...progress.laws, id] });
+    setError("");
+  };
+  const toggleArticle = (id: number) => {
+    update({ constitution: progress.constitution.includes(id) ? progress.constitution.filter((v) => v !== id) : [...progress.constitution, id] });
+    setError("");
+  };
+  const submitLaws = () => {
+    if (!progress.laws.length) return setError("Назовите хотя бы одну норму федерального законодательства.");
+    update({ stage: "constitution" });
+    setError("");
+  };
+  const finishQualification = () => {
+    update({ stage: "complete" });
+    setError("");
+  };
 
-const chooseFallbackKind = (category: string, place: string): SceneKind => {
-  const text = (category + " " + place).toLowerCase();
-  if (/лес|рубк|дерев|природ|эколог|вод|сброс|берег|рек/.test(text)) return /вод|сброс|берег|рек/.test(text) ? "river" : "forest";
-  if (/транспорт|станц|аэропорт|перевоз|автомоб|дорог|инспектор/.test(text)) return "roadside";
-  if (/труд|работ|зарплат|вахт|смен|агрокомплекс/.test(text)) return "agriculture";
-  if (/выплат|архив|реестр|сертификат|социальн/.test(text)) return "archive";
-  if (/строй|ремонт|кровл|подряд|смет/.test(text)) return "construction";
-  if (/учрежден|осужд|колони|медицин/.test(text)) return "facility";
-  return "facility";
-};
+  return <main className="playground-inspection">
+    <style>{`
+      .playground-inspection{min-height:100vh;padding:clamp(14px,2.2vw,30px);color:#f1eadf;background:radial-gradient(ellipse at 18% 0%,#304d462f,transparent 38%),linear-gradient(135deg,#0b1718,#121d1f 58%,#172222);font-family:Inter,system-ui,sans-serif}
+      .playground-inspection *{box-sizing:border-box}
+      .pg-head{max-width:1600px;margin:0 auto 18px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid #d9be9138;padding-bottom:18px}
+      .pg-kicker{display:block;color:#d3b17a;font:700 10px ui-monospace,monospace;letter-spacing:.18em}
+      .pg-head h1{margin:7px 0 0;font:650 clamp(22px,2.3vw,34px)/1.1 Georgia,serif}
+      .pg-sub{margin-top:7px;color:#acb5ad;font-size:12px}
+      .pg-back{display:flex;align-items:center;gap:8px;border:1px solid #ddc7a547;border-radius:8px;background:#ffffff0b;padding:10px 13px;color:#e8dfd0;font-size:12px;cursor:pointer}
+      .pg-back:hover{background:#ffffff18}
+      .pg-brief{max-width:1600px;margin:0 auto 17px;display:grid;grid-template-columns:1.1fr 1fr 1.1fr 1.2fr;gap:9px}
+      .pg-meta{padding:12px 14px;border:1px solid #dec59c2b;border-radius:9px;background:linear-gradient(145deg,#ffffff10,#ffffff05)}
+      .pg-meta span{display:block;margin-bottom:5px;color:#c7a978;font:700 9px ui-monospace,monospace;letter-spacing:.14em}
+      .pg-meta b{display:block;font-size:12px;line-height:1.45;font-weight:550;color:#eee8dc}
+      .pg-steps{max-width:1600px;margin:0 auto 17px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+      .pg-step{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:99px;background:#ffffff0a;border:1px solid #ffffff12;color:#93a09a;font-size:11px}
+      .pg-step i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#ffffff16;font:700 10px ui-monospace,monospace;font-style:normal}
+      .pg-step.active{border-color:#d3b17a99;background:#a77d4129;color:#f0d5a6}
+      .pg-step.done{color:#b9d5c2;border-color:#6ca77d61}
+      .pg-layout{max-width:1600px;margin:auto;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,.8fr);gap:18px;align-items:stretch}
+      .pg-scene,.pg-inspector,.pg-qual,.pg-report{border:1px solid #dec59c35;border-radius:12px;background:linear-gradient(145deg,#ffffff10,#ffffff05);overflow:hidden;box-shadow:0 20px 60px #0003}
+      .pg-scene-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid #ffffff14}
+      .pg-scene-head small{display:block;color:#c7a978;font:700 9px ui-monospace,monospace;letter-spacing:.16em}
+      .pg-scene-head b{display:block;margin-top:5px;font:600 17px Georgia,serif}
+      .pg-tag{display:flex;align-items:center;gap:6px;border:1px solid #d3b17a59;border-radius:99px;padding:7px 9px;color:#d9c49e;font-size:10px;white-space:nowrap}
+      .pg-stage{position:relative;aspect-ratio:16/9;min-height:310px;background:#202c27;overflow:hidden}
+      .pg-stage>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+      .pg-stage:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#050c0c47,transparent 32%,transparent 70%,#050c0c38),linear-gradient(0deg,#03090a66,transparent 30%);pointer-events:none}
+      .pg-hotspot{position:absolute;z-index:2;transform:translate(-50%,-50%);display:flex;align-items:center;gap:7px;border:1px solid #f4e4c3b3;border-radius:99px;background:#0a1616e8;padding:7px 10px 7px 7px;color:#fff1d6;box-shadow:0 4px 18px #0006;cursor:pointer;transition:transform .16s,background .16s}
+      .pg-hotspot:hover{transform:translate(-50%,-50%) scale(1.06);background:#263b34}
+      .pg-hotspot.active{border-color:#f1cc8a;background:#705430}
+      .pg-hotspot.checked{border-color:#9ccaa9;background:#13402bed}
+      .pg-hotspot i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#f3d9ac2e;font:700 10px ui-monospace,monospace;font-style:normal}
+      .pg-hotspot span{font-size:10px;font-weight:700;letter-spacing:.04em}
+      .pg-scene-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:12px 16px;color:#9fa9a3;font-size:10px}
+      .pg-legend{display:flex;gap:13px;flex-wrap:wrap}.pg-legend span{display:flex;align-items:center;gap:6px}.pg-legend i{width:8px;height:8px;border-radius:50%;background:#d5aa65}.pg-legend i.done{background:#85bd98}
+      .pg-count{font:700 10px ui-monospace,monospace;color:#ddc08a;letter-spacing:.1em}
+      .pg-inspector{padding:20px;display:flex;flex-direction:column;min-height:100%}
+      .pg-inspector h2{margin:9px 0 8px;font:600 25px/1.1 Georgia,serif;color:#f2eade}
+      .pg-copy{margin:0;color:#acb8af;font-size:12px;line-height:1.65}
+      .pg-photo{height:112px;margin:16px 0 14px;overflow:hidden;border-radius:8px;border:1px solid #ffffff20;background-image:url("/manus-storage/playground-inspection-scene.svg");background-size:310% auto}
+      .pg-observation{margin:0 0 15px;border-left:3px solid #d3ab6a;border-radius:0 8px 8px 0;background:#ddbc8317;padding:13px 14px}
+      .pg-observation small{display:block;color:#d8b980;font:700 9px ui-monospace,monospace;letter-spacing:.13em}
+      .pg-observation p{margin:7px 0 0;color:#f2eadd;font-size:14px;line-height:1.5}
+      .pg-question{margin:0 0 9px;color:#b1b9b1;font:700 9px ui-monospace,monospace;letter-spacing:.13em}
+      .pg-answer-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+      .pg-answer{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:1px solid #ddc59e47;border-radius:7px;background:#ffffff0a;color:#eee6d8;font-size:12px;font-weight:650;cursor:pointer}
+      .pg-answer:hover{background:#ffffff17;border-color:#d3b17a9c}
+      .pg-feedback{margin-top:13px;border-radius:8px;padding:12px 13px;font-size:11px;line-height:1.55}
+      .pg-feedback.good{border:1px solid #74b1855e;background:#2e68422e;color:#d7ead9}
+      .pg-feedback.bad{border:1px solid #d1856d6b;background:#84392829;color:#f0d0c5}
+      .pg-feedback b{display:block;margin-bottom:5px;font:700 9px ui-monospace,monospace;letter-spacing:.12em}
+      .pg-reset{margin-top:9px;border:0;background:none;padding:4px 0;color:#d9bd8e;font-size:10px;text-decoration:underline;cursor:pointer}
+      .pg-primary{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:auto;min-height:45px;border:1px solid #d5b77f;border-radius:7px;background:linear-gradient(135deg,#c49c61,#987447);color:#1b211d;font-size:12px;font-weight:800;cursor:pointer}
+      .pg-primary:disabled{opacity:.38;cursor:not-allowed}.pg-muted{margin:12px 0;color:#8e9a91;font-size:10px;line-height:1.5}
+      .pg-qual,.pg-report{max-width:1100px;margin:0 auto;padding:clamp(20px,3vw,36px)}
+      .pg-qual h2,.pg-report h2{margin:9px 0;font:600 clamp(24px,3vw,34px)/1.12 Georgia,serif}
+      .pg-qual>p,.pg-report>p{max-width:760px;color:#aeb9b1;font-size:13px;line-height:1.65}
+      .pg-law-list{display:grid;gap:10px;margin:22px 0}
+      .pg-law,.pg-article{display:flex;align-items:flex-start;gap:12px;border:1px solid #dec59c2e;border-radius:9px;background:#ffffff08;padding:14px 15px;cursor:pointer}
+      .pg-law:has(input:checked),.pg-article:has(input:checked){border-color:#d3b17aa8;background:#9e7a4524}
+      .pg-law input,.pg-article input{width:17px;height:17px;margin:1px 0 0;accent-color:#cfaa6c;flex:none}
+      .pg-law strong{display:block;color:#eddfc8;font-size:13px}.pg-law span{display:block;margin-top:4px;color:#aeb8af;font-size:12px;line-height:1.5}
+      .pg-articles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+      .pg-article{align-items:center;padding:17px}.pg-article strong{font:700 17px Georgia,serif;color:#efd5a6}
+      .pg-error{margin:9px 0 0;color:#ffbba3;font-size:11px}
+      .pg-report-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+      .pg-report-icon{display:grid;place-items:center;width:52px;height:52px;flex:none;border-radius:12px;background:#4b855a33;color:#acd1b4}
+      .pg-report-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+      .pg-report-item{border:1px solid #dec59c2b;border-radius:8px;background:#ffffff08;padding:13px}
+      .pg-report-item span{display:block;margin-bottom:6px;color:#c8a878;font:700 9px ui-monospace,monospace;letter-spacing:.13em}.pg-report-item b{font-size:12px;line-height:1.5;font-weight:550}
+      .pg-findings{margin:16px 0;padding:16px;border-left:3px solid #d3ab6a;background:#d3ab6a14}.pg-findings h3{margin:0 0 8px;font:700 10px ui-monospace,monospace;letter-spacing:.13em;color:#d6b680}.pg-findings p{margin:7px 0;color:#e7dfd1;font-size:12px;line-height:1.55}
+      .pg-legal{border-top:1px solid #ffffff17;padding-top:13px;margin-top:14px}.pg-legal span{display:block;color:#c8a878;font:700 9px ui-monospace,monospace;letter-spacing:.12em;margin:9px 0 4px}.pg-legal p{margin:0;color:#dfd8cb;font-size:12px;line-height:1.6}
+      @media(max-width:980px){.pg-layout{grid-template-columns:1fr}.pg-inspector{min-height:0}.pg-brief{grid-template-columns:1fr 1fr}}
+      @media(max-width:600px){.playground-inspection{padding:12px}.pg-head{align-items:flex-start}.pg-back{font-size:0;padding:10px}.pg-back svg{width:18px}.pg-brief{grid-template-columns:1fr 1fr}.pg-meta{padding:10px}.pg-meta b{font-size:11px}.pg-stage{min-height:245px}.pg-hotspot{padding:6px}.pg-hotspot span{display:none}.pg-hotspot i{width:25px;height:25px}.pg-inspector{padding:16px}.pg-report-grid,.pg-articles{grid-template-columns:1fr}}
+    `}</style>
 
-const SCENE_TITLES: Record<SceneKind, { title: string; subtitle: string }> = {
-  construction: { title: "Строительная площадка", subtitle: "Участок выполнения работ" },
-  forest: { title: "Лесной участок", subtitle: "Квартальная сеть и технологические проезды" },
-  archive: { title: "Административный объект", subtitle: "Зона приёма и архивные помещения" },
-  roadside: { title: "Дорожный участок", subtitle: "Место события и прилегающая инфраструктура" },
-  agriculture: { title: "Производственная территория", subtitle: "Корпуса, посты и хозяйственная зона" },
-  river: { title: "Прибрежная территория", subtitle: "Береговая линия и контрольные точки" },
-  facility: { title: "Территория учреждения", subtitle: "Корпуса и контрольные зоны" },
-};
-
-const SCENE_IMAGES: Record<SceneKind, string> = {
-  construction: "/manus-storage/inspection-site-construction.svg",
-  forest: "/manus-storage/inspection-site-forest.svg",
-  archive: "/manus-storage/inspection-site-archive.svg",
-  roadside: "/manus-storage/inspection-site-roadside.svg",
-  agriculture: "/manus-storage/inspection-site-agriculture.svg",
-  river: "/manus-storage/inspection-site-river.svg",
-  facility: "/manus-storage/inspection-site-facility.svg",
-};
-
-const getTravelMinutes = (from: PointLayout | undefined, to: PointLayout) => {
-  if (!from) return 0;
-  const distance = Math.hypot(from.x - to.x, from.y - to.y);
-  return Math.max(5, Math.min(20, Math.round(distance * 0.18)));
-};
-
-function SceneArtwork({ kind }: { kind: SceneKind }) {
-  return (
-    <svg className="inspection-map-art" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <pattern id="field-grid" width="5" height="5" patternUnits="userSpaceOnUse">
-          <path d="M 5 0 L 0 0 0 5" fill="none" stroke="currentColor" strokeWidth=".12" opacity=".35" />
-        </pattern>
-      </defs>
-      <rect width="100" height="100" fill="url(#field-grid)" />
-      {kind === "construction" && <>
-        <path d="M5 10H95V91H5Z" className="map-boundary" />
-        <path d="M8 14H92V22H8Z M8 82H92V89H8Z" className="map-road" />
-        <path d="M15 31L54 24L64 36L59 66L18 70Z" className="map-building" />
-        <path d="M20 35L51 29L58 37L54 61L21 65Z" className="map-roof" />
-        <path d="M67 29H87V53H67Z" className="map-building-alt" />
-        <path d="M68 57H91V76H68Z" className="map-yard" />
-        <path d="M10 75L32 75L36 82H10Z" className="map-road" />
-        <text x="25" y="18" className="map-label">ЖИЛОЙ ДОМ</text><text x="69" y="26" className="map-label">СКЛАД</text>
-      </>}
-      {kind === "forest" && <>
-        <path d="M4 10L96 4L93 94L6 90Z" className="map-boundary" />
-        <path d="M-5 83Q21 55 42 63T105 25" className="map-road" />
-        <path d="M4 31Q25 13 46 28T96 17 M2 48Q27 29 49 47T99 37 M0 68Q27 51 48 66T100 56" className="map-contour" />
-        {[[12,22],[22,18],[40,16],[63,13],[84,17],[12,42],[31,38],[70,42],[89,48],[14,61],[34,58],[83,68],[18,82],[42,84],[88,83]].map(([x,y],i)=><g key={i}><circle cx={x} cy={y} r="3.4" className="map-tree"/><circle cx={x} cy={y} r="1.5" className="map-tree-core"/></g>)}
-        <path d="M37 20L61 25L69 49L60 67L35 60L29 41Z" className="map-clearing" />
-        <text x="39" y="16" className="map-label">КВАРТАЛ 14</text>
-      </>}
-      {kind === "archive" && <>
-        <path d="M4 8H96V92H4Z" className="map-boundary" />
-        <path d="M5 48H95 M52 8V92" className="map-road" />
-        <path d="M9 14H44V42H9Z M59 13H90V39H59Z" className="map-building" />
-        <path d="M12 17H41V39H12Z M62 16H87V36H62Z" className="map-building-alt" />
-        <path d="M10 57H47V86H10Z" className="map-yard" />
-        <path d="M58 56H91V86H58Z" className="map-building" />
-        <path d="M63 61H86V81H63Z" className="map-building-alt" />
-        <text x="14" y="12" className="map-label">ПРИЁМ</text><text x="63" y="11" className="map-label">АРХИВ</text>
-      </>}
-      {kind === "roadside" && <>
-        <path d="M-5 35L105 55" className="map-highway-shadow" />
-        <path d="M-5 35L105 55" className="map-highway" />
-        <path d="M-5 32L105 52 M-5 38L105 58" className="map-road-edge" />
-        <path d="M-5 35L105 55" className="map-road-center" />
-        <path d="M7 66H37V89H7Z M66 8H94V27H66Z" className="map-yard" />
-        <path d="M12 70H32V85H12Z M70 12H90V23H70Z" className="map-building" />
-        <path d="M39 66L51 63L57 72L45 76Z" className="map-vehicle" />
-        <path d="M69 76L82 74L86 83L73 86Z" className="map-vehicle" />
-        <text x="8" y="63" className="map-label">ОСТАНОВКА</text><text x="68" y="8" className="map-label">ПАТРУЛЬ</text>
-      </>}
-      {kind === "agriculture" && <>
-        <path d="M5 8H95V92H5Z" className="map-boundary" />
-        <path d="M8 18H48V48H8Z M56 13H91V43H56Z" className="map-field" />
-        {Array.from({length:7},(_,i)=><path key={i} d={`M${10+i*5} 18V48`} className="map-crop-row" />)}
-        <path d="M10 56H45V84H10Z M60 52H91V88H60Z" className="map-building" />
-        <path d="M15 61H40V79H15Z M65 57H86V82H65Z" className="map-building-alt" />
-        <path d="M48 50L56 50L56 89L48 89Z" className="map-road" />
-        <text x="14" y="14" className="map-label">ПОЛЯ</text><text x="63" y="49" className="map-label">КОМПЛЕКС</text>
-      </>}
-      {kind === "river" && <>
-        <path d="M-5 28Q26 5 49 30T106 23L106 47Q72 53 49 44T-5 52Z" className="map-water" />
-        <path d="M-5 28Q26 5 49 30T106 23 M-5 52Q25 29 49 44T106 47" className="map-water-edge" />
-        <path d="M7 65H92V91H7Z" className="map-boundary" />
-        <path d="M18 62L35 55L43 68L25 78Z M61 60L85 57L91 71L66 78Z" className="map-building" />
-        <path d="M12 82Q38 68 58 82T96 82" className="map-road" />
-        <text x="9" y="20" className="map-label">ВОДНЫЙ ОБЪЕКТ</text><text x="64" y="55" className="map-label">ВЫПУСК</text>
-      </>}
-      {kind === "facility" && <>
-        <path d="M4 8H96V92H4Z" className="map-boundary" />
-        <path d="M10 17H44V42H10Z M57 14H90V45H57Z M13 58H42V84H13Z M60 60H90V85H60Z" className="map-building" />
-        <path d="M15 22H39V37H15Z M62 19H85V40H62Z M18 63H37V79H18Z M65 65H85V80H65Z" className="map-building-alt" />
-        <path d="M47 8V92 M4 51H96" className="map-road" />
-        <text x="13" y="13" className="map-label">КОРПУС А</text><text x="61" y="10" className="map-label">КОРПУС Б</text>
-      </>}
-    </svg>
-  );
-}
-
-export function InspectionTacticalMap(props: Props) {
-  const {
-    territorialFullscreen, onBackToCabinet, caseFile, materials, visited, route, selectedPoint, reportOpen, remainingHours, canDecide,
-    feedback, finished, score, totalCases, trust, rating, onSelectPoint, onInspectPoint,
-    onOpenReport, onDecision, onNext, onRestart,
-  } = props;
-  const explicit = CASE_LAYOUTS[caseFile.id];
-  const kind = explicit?.kind ?? chooseFallbackKind(caseFile.category, caseFile.place);
-  const scene = SCENE_TITLES[kind];
-  const layouts = explicit?.locations ?? DEFAULT_LAYOUT;
-  const points = materials.map((material, index) => ({
-    ...layouts[index] ?? DEFAULT_LAYOUT[index % DEFAULT_LAYOUT.length],
-    label: material.label,
-    text: material.text,
-  }));
-  const safeSelected = Math.max(0, Math.min(selectedPoint, Math.max(points.length - 1, 0)));
-  const selected = points[safeSelected];
-  const selectedVisited = visited.includes(safeSelected);
-  const complete = points.length > 0 && points.every((_, index) => visited.includes(index));
-  const lastVisited = route.length ? points[route[route.length - 1]] : undefined;
-  const travelMinutes = selected && !selectedVisited ? getTravelMinutes(lastVisited, selected) : 0;
-  const routePoints = route.map((index) => points[index]).filter(Boolean).map((point) => `${point.x},${point.y}`).join(" ");
-  const remainingLabel = remainingHours.toLocaleString("ru-RU", { minimumFractionDigits: Number.isInteger(remainingHours) ? 0 : 1, maximumFractionDigits: 1 });
-  const inspectedCount = visited.length;
-  const fullscreenHeader = territorialFullscreen ? <header className="inspection-fullscreen-header"><div className="inspection-fullscreen-brand"><span className="inspection-fullscreen-mark"><ShieldCheck size={19}/></span><span><b>ВЫЕЗДНАЯ ПРОВЕРКА</b><small>{caseFile.number} · {caseFile.place}</small></span></div><div className="inspection-fullscreen-title"><span>ТЕРРИТОРИАЛЬНАЯ ПРОКУРАТУРА</span><b>{caseFile.category}</b></div><div className="inspection-fullscreen-clock"><span>ОСТАЛОСЬ</span><b>{remainingLabel} ч.</b></div><button type="button" className="inspection-back-cabinet" onClick={onBackToCabinet}><ArrowLeft size={16}/> В кабинет</button></header> : null;
-
-  if (finished) {
-    return <>{fullscreenHeader}<section className="inspection-finish"><div className="inspection-finish-mark"><ShieldCheck size={30}/></div><span>ВЫЕЗДНАЯ РАБОТА · ДЕНЬ ЗАВЕРШЁН</span><h2>{rating}</h2><p>Проверка закончена. Верных решений: <b>{score} из {totalCases}</b>. Доверие канцелярии: <b>{trust}/5</b>.</p><button type="button" onClick={onRestart}>Начать новую смену <ArrowRight size={16}/></button></section></>;
-  }
-
-  if (reportOpen) {
-    return (
-      <>
-      {fullscreenHeader}
-      <section className="inspection-report-screen">
-        <header className="inspection-report-head"><div><span>ПОЛЕВОЙ ЖУРНАЛ · {caseFile.number}</span><h2>Результаты выездной проверки</h2><p>{caseFile.category} · {caseFile.place}</p></div><div className="inspection-report-stamp"><ShieldCheck size={18}/> ОСМОТР ЗАВЕРШЁН</div></header>
-        <div className="inspection-report-grid">
-          <div className="inspection-report-main">
-            <article className="inspection-report-paper"><span className="inspection-report-kicker">УСТАНОВЛЕННЫЕ ОБСТОЯТЕЛЬСТВА</span><h3>{caseFile.category}</h3><p>{caseFile.summary}</p><div className="inspection-report-facts"><div><span>ПРОВЕРЯЕМЫЙ СУБЪЕКТ</span><b>{caseFile.person}</b></div><div><span>МЕСТО ПРОВЕРКИ</span><b>{caseFile.place}</b></div></div><div className="inspection-report-findings"><b>ЗАФИКСИРОВАННЫЕ РЕЗУЛЬТАТЫ</b>{points.map((point,index)=><div key={point.label}><span>{String(index+1).padStart(2,"0")} · {point.label}</span><p>{point.text}</p></div>)}</div><div className="inspection-report-conclusion"><span>СВОДКА ПО МАТЕРИАЛАМ</span><p>{caseFile.evidence}</p></div><small className="inspection-report-disclaimer">Игровая сводка отражает сведения сценария и не заменяет процессуальные документы, оформляемые в установленном порядке.</small></article>
-          </div>
-          <aside className="inspection-report-side">
-            {feedback ? <div className={"inspection-decision-result " + (feedback.good ? "good" : "bad")}><span>{feedback.good ? "РЕШЕНИЕ ОБОСНОВАНО" : "РЕШЕНИЕ НЕ СООТВЕТСТВУЕТ МАТЕРИАЛАМ"}</span><h3>{feedback.good ? "Проверка завершена" : "Нужна дополнительная оценка"}</h3><p>{feedback.text}</p><button type="button" className="inspection-primary-action" onClick={onNext}>Следующее дело <ArrowRight size={16}/></button></div> : <div className="inspection-decision-panel"><span>ИТОГОВОЕ РЕШЕНИЕ</span><h3>Оцените установленные обстоятельства</h3><p>Выберите решение по результатам осмотра и собранных материалов.</p><button type="button" className="inspection-choice dismiss" disabled={!canDecide} onClick={() => onDecision("dismiss")}><X size={17}/><span><b>Отказать</b><small>Материалы не подтверждают основания</small></span></button><button type="button" className="inspection-choice prosecute" disabled={!canDecide} onClick={() => onDecision("prosecute")}><CheckCircle2 size={17}/><span><b>Направить материалы</b><small>Основания для дальнейшего реагирования</small></span></button><small className="inspection-decision-hint">{canDecide ? "Решение занимает 1 час рабочего времени." : "Сначала осмотрите все точки и убедитесь, что осталось не менее 1 часа."}</small></div>}
-          </aside>
-        </div>
-      </section>
-      </>
-    );
-  }
-
-  return (
-    <>
-    {fullscreenHeader}
-    <section className={"inspection-tactical inspection-theme-" + kind}>
-      <header className="inspection-tactical-head"><div><span className="inspection-eyebrow"><Navigation size={13}/> ВЫЕЗДНАЯ ПРОВЕРКА · МАРШРУТ 02</span><h2>{caseFile.category}</h2><p>{caseFile.number} · {caseFile.place}</p></div><div className="inspection-hud"><div><span>РАБОЧЕЕ ВРЕМЯ</span><b>{remainingLabel} ч.</b></div><div><span>ТОЧКИ ОСМОТРА</span><b>{inspectedCount}/{points.length}</b></div></div></header>
-      <div className="inspection-objective"><div><Flag size={16}/><span><b>ЗАДАЧА ВЫЕЗДА</b>{caseFile.summary}</span></div><div className="inspection-progress"><i style={{ width: (points.length ? inspectedCount / points.length * 100 : 0) + "%" }}/></div></div>
-      <div className="inspection-tactical-grid">
-        <div className="inspection-map-column">
-          <div className="inspection-map-title"><div><span>СХЕМА ТЕРРИТОРИИ</span><b>{explicit?.title ?? scene.title}</b><small>{explicit?.subtitle ?? scene.subtitle}</small></div><div className="inspection-compass"><Compass size={22}/><span>СЕВЕР</span></div></div>
-          <div className="inspection-map-surface">
-            <img className="inspection-site-image" src={SCENE_IMAGES[kind]} alt="" aria-hidden="true" />
-            <SceneArtwork kind={kind}/>
-            <svg className="inspection-route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-              {routePoints && <polyline points={routePoints} className="inspection-route-line"/>}
-              {route.map((index,order)=>{ const point=points[index]; return point ? <g key={index}><circle cx={point.x} cy={point.y} r="2.5" className="inspection-route-stop"/><text x={point.x+3} y={point.y-3} className="inspection-route-number">{order+1}</text></g> : null; })}
-            </svg>
-            {points.map((point,index)=>{
-              const isVisited=visited.includes(index);
-              const isSelected=safeSelected===index;
-              const routeOrder=route.indexOf(index);
-              return <button type="button" key={point.label} className={"inspection-map-marker " + (isVisited?"visited ":"") + (isSelected?"selected ":"")} style={{left:point.x+"%",top:point.y+"%"}} onClick={()=>onSelectPoint(index)} aria-label={"Выбрать точку осмотра: "+point.label}>
-                <span className="inspection-marker-number">{isVisited ? routeOrder>=0?routeOrder+1:"✓" : String(index+1).padStart(2,"0")}</span><span className="inspection-marker-label">{point.label}</span>
-              </button>;
-            })}
-            <div className="inspection-map-scale"><span/> СХЕМА УЧАСТКА · УСЛОВНЫЕ КООРДИНАТЫ</div>
-            <div className="inspection-map-legend"><span><i className="open"/> Не осмотрено</span><span><i className="done"/> Зафиксировано</span></div>
-          </div>
-          <div className="inspection-route-strip"><div><Route size={15}/><span>ПОСЛЕДОВАТЕЛЬНОСТЬ МАРШРУТА</span></div><div className="inspection-route-chips">{route.length ? route.map((index,order)=><button type="button" key={index} onClick={()=>onSelectPoint(index)}><b>{order+1}</b>{points[index]?.label}</button>) : <small>Маршрут ещё не начат — выберите первую точку на схеме.</small>}</div></div>
-        </div>
-        <aside className="inspection-point-panel">
-          <div className="inspection-panel-top"><span>ОБЪЕКТ ОСМОТРА</span><b>{String(safeSelected+1).padStart(2,"0")} / {String(points.length).padStart(2,"0")}</b></div>
-          {selected ? <>
-            <div className="inspection-selected-point"><span className="inspection-location-tag"><MapPin size={12}/>{selected.zone}</span><h3>{selected.label}</h3><p>{selected.task}</p></div>
-            {selectedVisited ? <div className="inspection-observation"><span><CheckCircle2 size={14}/> РЕЗУЛЬТАТ ОСМОТРА ЗАФИКСИРОВАН</span><p>{selected.text}</p><small>Повторный просмотр не расходует рабочее время.</small></div> : <div className="inspection-unvisited"><span>ПЕРЕД НАЧАЛОМ ОСМОТРА</span><p>Осмотрите объект и зафиксируйте сведения в полевом журнале. Порядок посещения выбираете самостоятельно.</p><ul><li>Осмотр и фиксация — 30 минут</li><li>Переезд — {travelMinutes ? travelMinutes+" минут" : "без дополнительного переезда"}</li></ul></div>}
-            <button type="button" className="inspection-primary-action" disabled={selectedVisited || remainingHours < 0.5 + travelMinutes / 60} onClick={()=>onInspectPoint(safeSelected,travelMinutes)}>{selectedVisited ? "Точка уже осмотрена" : "Осмотреть объект"} <ArrowRight size={16}/></button>
-          </> : <p className="inspection-empty-point">Выберите точку на карте.</p>}
-          <div className="inspection-panel-footer"><div><Clock3 size={14}/><span>ОСТАЛОСЬ <b>{remainingLabel} Ч.</b></span></div><span>{inspectedCount===points.length?"ВСЕ ТОЧКИ ПРОВЕРЕНЫ":"ВЫБЕРИТЕ СЛЕДУЮЩУЮ ТОЧКУ"}</span></div>
-          <button type="button" className="inspection-report-button" disabled={!complete} onClick={onOpenReport}>{complete ? "Перейти к акту проверки" : "Осмотрите все точки для завершения"} <FileText size={16}/></button>
-        </aside>
+    <header className="pg-head">
+      <div>
+        <span className="pg-kicker">НАДЗОР ЗА СОБЛЮДЕНИЕМ ПРАВ НЕСОВЕРШЕННОЛЕТНИХ</span>
+        <h1>Выездная проверка · Детская площадка</h1>
+        <div className="pg-sub">Обращение «Травмоопасная детская площадка» · улица Пушкина</div>
       </div>
+      <button type="button" className="pg-back" onClick={onBackToComplaint}><ArrowLeft size={15}/> К обращению</button>
+    </header>
+
+    <section className="pg-brief" aria-label="Основания проверки">
+      <div className="pg-meta"><span>ПРИМЕНЯЕМЫЙ ПРИКАЗ</span><b>Приказ Генпрокуратуры России от 13.12.2021 № 744</b></div>
+      <div className="pg-meta"><span>ПОДНАДЗОРНЫЙ ОБЪЕКТ</span><b>Городская администрация</b></div>
+      <div className="pg-meta"><span>ОСНОВАНИЕ ПРОВЕРКИ</span><b>Поступившая информация о нарушении федерального законодательства</b></div>
+      <div className="pg-meta"><span>ПРЕДМЕТ И ОБЪЕКТ</span><b>Безопасность несовершеннолетних и молодёжи · муниципальная площадка на балансе города</b></div>
     </section>
-    </>
-  );
+
+    <div className="pg-steps">
+      <div className={"pg-step " + (progress.stage === "objects" ? "active" : "done")}><i>01</i> Осмотр объектов</div>
+      <div className={"pg-step " + (progress.stage === "laws" ? "active" : ["constitution","complete"].includes(progress.stage) ? "done" : "")}><i>02</i> Федеральные нормы</div>
+      <div className={"pg-step " + (progress.stage === "constitution" ? "active" : progress.stage === "complete" ? "done" : "")}><i>03</i> Конституция РФ · опционально</div>
+    </div>
+
+    {progress.stage === "objects" && <div className="pg-layout">
+      <section className="pg-scene">
+        <div className="pg-scene-head">
+          <div><small>МЕСТО ПРОВЕРКИ · УЛИЦА ПУШКИНА</small><b>Территория муниципальной детской площадки</b></div>
+          <span className="pg-tag"><MapPin size={12}/> ОБЪЕКТ НА БАЛАНСЕ ГОРОДА</span>
+        </div>
+        <div className="pg-stage">
+          <img src={PLAYGROUND_IMAGE} alt="Муниципальная детская площадка" />
+          {OBJECTS.map((item, index) => {
+            const isChecked = progress.answers[item.id] === item.answer;
+            const active = progress.selectedObject === item.id;
+            return <button type="button" key={item.id} className={"pg-hotspot " + (active ? "active " : "") + (isChecked ? "checked" : "")} style={{ left: item.left, top: item.top }} onClick={() => { update({ selectedObject: item.id }); setError(""); }} aria-label={"Осмотреть объект: " + item.name}>
+              <i>{isChecked ? <Check size={12}/> : String(index + 1).padStart(2,"0")}</i><span>{item.short}</span>
+            </button>;
+          })}
+        </div>
+        <div className="pg-scene-foot"><div className="pg-legend"><span><i/> Выберите объект</span><span><i className="done"/> Ответ принят</span></div><strong className="pg-count">ЗАФИКСИРОВАНО {checked} / 3</strong></div>
+      </section>
+
+      <aside className="pg-inspector">
+        <span className="pg-kicker">ПОЛЕВОЙ ЖУРНАЛ · {String(OBJECTS.findIndex((item) => item.id === selected.id) + 1).padStart(2,"0")} / 03</span>
+        <h2>{selected.name}</h2>
+        <p className="pg-copy">Выберите объект на площадке, изучите установленное обстоятельство и определите, содержит ли оно нарушение требований безопасности.</p>
+        <div className="pg-photo" style={{ backgroundPosition: selected.crop }}/>
+        <div className="pg-observation"><small>УСТАНОВЛЕННОЕ ОБСТОЯТЕЛЬСТВО</small><p>{selected.fact}</p></div>
+        <p className="pg-question">ЕСТЬ ЛИ НАРУШЕНИЕ?</p>
+        {correct ? <div className="pg-feedback good"><b><CheckCircle2 size={13} style={{display:"inline",verticalAlign:"middle"}}/> ОТВЕТ ЗАФИКСИРОВАН</b>{selected.note}</div> : answer ? <div className="pg-feedback bad"><b><X size={13} style={{display:"inline",verticalAlign:"middle"}}/> ОТВЕТ НЕВЕРНЫЙ</b>Проверьте формулировку установленного обстоятельства и повторите оценку.<button type="button" className="pg-reset" onClick={resetAnswer}>Изменить ответ</button></div> : <div className="pg-answer-row"><button type="button" className="pg-answer" onClick={() => answerObject("yes")}><CheckCircle2 size={16}/> Да, есть</button><button type="button" className="pg-answer" onClick={() => answerObject("no")}><X size={16}/> Нет</button></div>}
+        <p className="pg-muted">{correct ? "Результат внесён в акт осмотра. Можно перейти к следующему объекту." : "Для завершения необходимо правильно оценить все три объекта."}</p>
+        <button type="button" className="pg-primary" disabled={checked !== 3} onClick={() => update({ stage: "laws" })}>Перейти к правовой оценке <ArrowRight size={16}/></button>
+      </aside>
+    </div>}
+
+    {progress.stage === "laws" && <section className="pg-qual">
+      <span className="pg-kicker">ЭТАП 02 · ПРАВОВАЯ ОЦЕНКА</span>
+      <h2>Какие нормы федерального законодательства нарушены?</h2>
+      <p>Назовите хотя бы одну норму, связанную, по условиям учебного сценария, с выявленными нарушениями безопасности детской игровой площадки. Можно выбрать несколько вариантов.</p>
+      <div className="pg-law-list">{FEDERAL_LAWS.map((law) => <label className="pg-law" key={law.id}><input type="checkbox" checked={progress.laws.includes(law.id)} onChange={() => toggleLaw(law.id)}/><span><strong>{law.title}</strong><span>{law.description}</span></span></label>)}</div>
+      {error && <p className="pg-error">{error}</p>}
+      <div className="pg-answer-row"><button type="button" className="pg-answer" onClick={() => update({ stage: "objects" })}><ArrowLeft size={15}/> Вернуться к осмотру</button><button type="button" className="pg-primary" onClick={submitLaws}>Подтвердить нормы <ArrowRight size={16}/></button></div>
+    </section>}
+
+    {progress.stage === "constitution" && <section className="pg-qual">
+      <span className="pg-kicker">ЭТАП 03 · ДОПОЛНИТЕЛЬНАЯ ОЦЕНКА</span>
+      <h2>Какие статьи Конституции РФ затронуты?</h2>
+      <p>Этот этап необязательный. Выберите одну или обе статьи либо пропустите вопрос.</p>
+      <div className="pg-articles">{[38,41].map((article) => <label className="pg-article" key={article}><input type="checkbox" checked={progress.constitution.includes(article)} onChange={() => toggleArticle(article)}/><strong>Статья {article}</strong></label>)}</div>
+      {error && <p className="pg-error">{error}</p>}
+      <div className="pg-answer-row"><button type="button" className="pg-answer" onClick={() => update({ stage: "laws" })}><ArrowLeft size={15}/> Назад к нормам</button><button type="button" className="pg-answer" onClick={finishQualification}>Пропустить</button><button type="button" className="pg-primary" onClick={finishQualification}>Зафиксировать статьи <ArrowRight size={16}/></button></div>
+    </section>}
+
+    {progress.stage === "complete" && <section className="pg-report">
+      <div className="pg-report-head"><div className="pg-report-icon"><ClipboardCheck size={26}/></div><div><span className="pg-kicker">ПОЛЕВОЙ ЖУРНАЛ · ПРОВЕРКА ЗАВЕРШЕНА</span><h2>Осмотр детской площадки завершён</h2><p className="pg-copy">Все три объекта осмотрены, результаты зафиксированы. Можно вернуться к обращению и продолжить работу с материалом.</p></div></div>
+      <div className="pg-report-grid"><div className="pg-report-item"><span>ПОДНАДЗОРНЫЙ ОБЪЕКТ</span><b>Городская администрация</b></div><div className="pg-report-item"><span>МЕСТО ОСМОТРА</span><b>Муниципальная детская площадка · улица Пушкина</b></div></div>
+      <div className="pg-findings"><h3>УСТАНОВЛЕННЫЕ НАРУШЕНИЯ</h3><p><b>Качели:</b> отсутствуют одиночные гибкие элементы. ГОСТ Р 52167-2012.</p><p><b>Покрытие:</b> отсутствует ударопоглощающее покрытие. ГОСТ Р ЕН 1177-2013.</p><p><b>Скамейка:</b> синий цвет окраски не является нарушением.</p></div>
+      <div className="pg-legal"><span>ФЕДЕРАЛЬНОЕ ЗАКОНОДАТЕЛЬСТВО · ВЫБРАНО</span><p>{FEDERAL_LAWS.filter((law) => progress.laws.includes(law.id)).map((law) => law.title + " " + law.description).join("; ")}</p><span>КОНСТИТУЦИЯ РФ · {progress.constitution.length ? "ОТМЕЧЕНО" : "НЕОБЯЗАТЕЛЬНЫЙ ЭТАП ПРОПУЩЕН"}</span><p>{progress.constitution.length ? progress.constitution.map((article) => "ст. " + article).join(", ") : "Статьи не указывались."}</p></div>
+      <button type="button" className="pg-primary" onClick={onComplete}>Завершить проверку и вернуться к обращению <ArrowRight size={16}/></button>
+    </section>}
+  </main>;
 }

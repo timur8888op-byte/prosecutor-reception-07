@@ -9,13 +9,15 @@ type Props = {
   quality: number;
   reputationLabel: string;
   featureImage: string;
+  inspectionAvailable: boolean;
+  inspectionComplete: boolean;
   onInspections: () => void;
   onPersonnel: () => void;
 };
 
 export function TerritorialOfficeDashboard({
   name, dayNumber, dateLabel, clockLabel, trust, quality, reputationLabel,
-  featureImage, onInspections, onPersonnel,
+  featureImage, inspectionAvailable, inspectionComplete, onInspections, onPersonnel,
 }: Props) {
   return (
     <section className="territorial-office-dashboard" aria-label="Рабочий кабинет территориальной прокуратуры">
@@ -26,11 +28,11 @@ export function TerritorialOfficeDashboard({
           <p>Организация надзорной деятельности, рассмотрение обращений, проведение проверок и принятие мер прокурорского реагирования.</p>
         </div>
         <div className="territorial-dashboard-content">
-          <button type="button" className="territorial-field-feature" style={{ backgroundImage: `linear-gradient(90deg,rgba(8,17,18,.94) 0%,rgba(8,17,18,.72) 48%,rgba(8,17,18,.12) 100%),url("${featureImage}")` }} onClick={onInspections}>
-            <span className="territorial-field-badge"><CarFront size={14} /> ВЫЕЗДНЫЕ ПРОВЕРКИ</span>
-            <span className="territorial-field-title">Выездные<br />проверки</span>
-            <span className="territorial-field-description">Осмотр объектов, маршрут по территории, фиксация обстоятельств и сбор материалов на месте.</span>
-            <span className="territorial-field-action">ПЕРЕЙТИ К ПРОВЕРКАМ <ArrowRight size={16} /></span>
+          <button type="button" className={"territorial-field-feature " + (!inspectionAvailable || inspectionComplete ? "locked" : "")} style={{ backgroundImage: `linear-gradient(90deg,rgba(8,17,18,.94) 0%,rgba(8,17,18,.72) 48%,rgba(8,17,18,.12) 100%),url("${featureImage}")` }} onClick={onInspections} disabled={!inspectionAvailable || inspectionComplete}>
+            <span className="territorial-field-badge"><CarFront size={14} /> ЕДИНСТВЕННЫЙ ВЫЕЗДНОЙ СЦЕНАРИЙ</span>
+            <span className="territorial-field-title">Проверка<br />детской площадки</span>
+            <span className="territorial-field-description">{inspectionComplete ? "Осмотр по обращению жителя улицы Пушкина завершён. Акт внесён в материалы." : inspectionAvailable ? "Обращение принято. Проведите осмотр муниципальной площадки: качели, покрытие и скамейка." : "Проверка откроется после принятия жалобы мужчины — жителя улицы Пушкина и выбора представления."}</span>
+            <span className="territorial-field-action">{inspectionComplete ? "ПРОВЕРКА ЗАВЕРШЕНА" : inspectionAvailable ? "НАЧАТЬ ИЛИ ПРОДОЛЖИТЬ ОСМОТР" : "ОЖИДАНИЕ ПРИНЯТИЯ ЖАЛОБЫ"} {!inspectionComplete && inspectionAvailable && <ArrowRight size={16} />}</span>
           </button>
         </div>
       </div>

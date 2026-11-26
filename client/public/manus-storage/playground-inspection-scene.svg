@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Муниципальная детская площадка во время прокурорской проверки">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#486c83"/><stop offset=".55" stop-color="#9fb4ba"/><stop offset="1" stop-color="#e6c9a0"/></linearGradient>
+ <linearGradient id="sunlight" x2="1" y2="1"><stop stop-color="#f5d9a6" stop-opacity=".9"/><stop offset="1" stop-color="#f5d9a6" stop-opacity="0"/></linearGradient>
+ <linearGradient id="ground" x2="0" y2="1"><stop stop-color="#8a8571"/><stop offset="1" stop-color="#343e3c"/></linearGradient>
+ <linearGradient id="concrete" x2="0" y2="1"><stop stop-color="#aaa89a"/><stop offset="1" stop-color="#626b68"/></linearGradient>
+ <linearGradient id="metal" x2="1" y2="1"><stop stop-color="#415e65"/><stop offset=".5" stop-color="#172a30"/><stop offset="1" stop-color="#6c8585"/></linearGradient>
+ <linearGradient id="wood" x2="0" y2="1"><stop stop-color="#a87a4e"/><stop offset="1" stop-color="#624a37"/></linearGradient>
+ <linearGradient id="bluePaint" x2="0" y2="1"><stop stop-color="#4580a5"/><stop offset="1" stop-color="#173b5c"/></linearGradient>
+ <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#d5c2a6"/><stop offset="1" stop-color="#8b8a7f"/></linearGradient>
+ <linearGradient id="glass" x2="0" y2="1"><stop stop-color="#536e7b"/><stop offset="1" stop-color="#263d49"/></linearGradient>
+ <radialGradient id="vignette"><stop offset=".58" stop-color="#061113" stop-opacity="0"/><stop offset="1" stop-color="#061113" stop-opacity=".48"/></radialGradient>
+ <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="14"/></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="2.5"/></filter>
+ <pattern id="pavers" width="106" height="64" patternUnits="userSpaceOnUse"><path d="M0 0H106M0 32H106M53 0V32M0 32V64M106 32V64" fill="none" stroke="#414d4b" stroke-opacity=".35" stroke-width="2"/><path d="M5 5H48M58 37H100" stroke="#d6ccb5" stroke-opacity=".16" stroke-width="3"/></pattern>
+ <pattern id="walltexture" width="75" height="75" patternUnits="userSpaceOnUse"><path d="M0 13L75 0M-8 55L34 34M42 76L84 49" stroke="#fff" stroke-opacity=".08" stroke-width="3"/></pattern>
+</defs>
+<!-- evening courtyard -->
+<rect width="1600" height="900" fill="url(#sky)"/>
+<path d="M0 160 Q140 95 278 140 T560 127 T850 148 T1160 117 T1600 145V330H0Z" fill="#d4d6cb" opacity=".28"/>
+<path d="M0 228 Q300 142 520 220 T1000 184 T1600 209V380H0Z" fill="#f2d8b2" opacity=".22"/>
+<path d="M0 0H1600V215Q1310 164 1100 223T650 194T0 250Z" fill="url(#sunlight)"/>
+<!-- apartment blocks -->
+<g opacity=".98">
+ <path d="M0 190L390 150L468 492H0Z" fill="#a5a094"/><path d="M0 190L390 150L468 492H0Z" fill="url(#walltexture)"/>
+ <path d="M35 218L125 207V279L35 290ZM160 204L252 194V270L160 280ZM289 190L370 182V253L289 262Z" fill="url(#glass)" stroke="#5d6866" stroke-width="8"/>
+ <path d="M32 326L127 314V390L32 400ZM158 310L252 300V377L158 386ZM286 296L381 284V359L286 369Z" fill="url(#glass)" stroke="#5e6865" stroke-width="8"/>
+ <path d="M32 428L130 415V483H32ZM162 410L254 399V474H162ZM292 397L390 385V455H292Z" fill="#d4bd99" opacity=".7"/>
+ <path d="M1130 146L1600 185V515H1130Z" fill="#858d87"/><path d="M1130 146L1600 185V515H1130Z" fill="url(#walltexture)"/>
+ <path d="M1170 203L1278 212V286L1170 278ZM1315 215L1420 224V299L1315 290ZM1454 228L1556 237V309L1454 301Z" fill="url(#glass)" stroke="#4e5c5e" stroke-width="8"/>
+ <path d="M1171 326L1280 333V408L1171 402ZM1316 340L1422 348V420L1316 414ZM1455 353L1557 362V433L1455 426Z" fill="url(#glass)" stroke="#536164" stroke-width="8"/>
+ <path d="M1130 470H1600V515H1130Z" fill="#d2c1a3" opacity=".55"/>
+</g>
+<!-- distant trees and fence -->
+<path d="M0 470C85 398 150 406 233 459C320 402 403 405 483 467C580 410 642 419 728 472V640H0Z" fill="#314c3d"/>
+<g fill="#47634b"><circle cx="38" cy="450" r="78"/><circle cx="108" cy="427" r="77"/><circle cx="195" cy="462" r="80"/><circle cx="295" cy="452" r="90"/><circle cx="398" cy="467" r="78"/><circle cx="516" cy="455" r="86"/><circle cx="622" cy="467" r="72"/><circle cx="1470" cy="442" r="70"/><circle cx="1544" cy="470" r="90"/></g>
+<g fill="#76906a" opacity=".7"><circle cx="88" cy="405" r="34"/><circle cx="229" cy="420" r="39"/><circle cx="339" cy="421" r="41"/><circle cx="467" cy="433" r="38"/><circle cx="560" cy="429" r="39"/><circle cx="1494" cy="406" r="34"/></g>
+<path d="M0 550H1600V615H0Z" fill="#303e3d"/>
+<g stroke="#182b2d" stroke-width="8" fill="none" opacity=".8"><path d="M0 535H1600M0 578H1600"/><path d="M35 518V624M150 518V624M265 518V624M380 518V624M495 518V624M610 518V624M725 518V624M840 518V624M955 518V624M1070 518V624M1185 518V624M1300 518V624M1415 518V624M1530 518V624"/></g>
+<!-- foreground ground, deliberately hard tile surface rather than rubber -->
+<path d="M0 610L1600 590V900H0Z" fill="url(#ground)"/>
+<path d="M0 618L1600 598V900H0Z" fill="url(#concrete)" opacity=".55"/>
+<path d="M0 618L1600 598V900H0Z" fill="url(#pavers)" opacity=".82"/>
+<path d="M0 620L1600 600" stroke="#e0c59b" stroke-width="6" opacity=".5"/>
+<!-- worn impact zone without soft surfacing -->
+<path d="M120 626L1050 621L1194 900H52Z" fill="#767970" opacity=".4"/>
+<path d="M120 626L1050 621L1194 900H52Z" fill="url(#pavers)" opacity=".7"/>
+<!-- swings: rigid metal frame, chain links and seat -->
+<ellipse cx="335" cy="833" rx="280" ry="33" fill="#101b1d" opacity=".45" filter="url(#shadow)"/>
+<g stroke="url(#metal)" stroke-width="27" fill="none" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M130 632L248 320L345 632M248 320L455 632M130 632H455"/>
+ <path d="M248 320H588"/>
+</g>
+<g stroke="#bac2b7" stroke-width="4" opacity=".7"><path d="M135 631L249 326L344 631M457 629L249 326"/><path d="M248 326H585"/></g>
+<g stroke="#5d6460" stroke-width="5" fill="none">
+ <path d="M365 338L398 704M430 338L439 704"/>
+ <path d="M364 362L398 379M365 392L400 409M370 421L401 438M373 451L404 468M377 481L407 498M380 511L410 528M383 541L413 558M387 571L416 588M390 601L419 618M393 631L422 648M397 661L426 678"/>
+ <path d="M430 362L440 379M431 392L441 409M432 422L442 439M433 452L443 469M434 482L444 499M435 512L445 529M436 542L446 559M437 572L447 589M438 602L448 619M439 632L449 649M440 662L450 679"/>
+</g>
+<path d="M372 700Q416 686 462 701L468 720Q418 737 370 720Z" fill="url(#wood)" stroke="#392e26" stroke-width="6"/>
+<path d="M382 707L455 706" stroke="#d9b184" stroke-width="5" opacity=".6"/>
+<!-- swing area warning paint -->
+<path d="M190 756L660 751L730 900H128Z" fill="#7a6756" opacity=".1"/>
+<!-- slide/play tower -->
+<ellipse cx="880" cy="820" rx="250" ry="40" fill="#101b1d" opacity=".37" filter="url(#shadow)"/>
+<g>
+ <path d="M706 415L1001 403L1036 662H683Z" fill="#ad7448" stroke="#4d3d31" stroke-width="10"/>
+ <path d="M706 415L1001 403L1036 662H683Z" fill="url(#walltexture)"/>
+ <path d="M720 432L813 428V542L720 546Z" fill="#426d7b" stroke="#54483b" stroke-width="9"/>
+ <path d="M834 427L933 423V540L834 544Z" fill="#315868" stroke="#54483b" stroke-width="9"/>
+ <path d="M697 408L1008 397L1040 424L688 437Z" fill="#e2c590" stroke="#584432" stroke-width="8"/>
+ <path d="M753 552L968 548L1140 812L1060 836L872 610L753 612Z" fill="#bd784a" stroke="#503a2e" stroke-width="12"/>
+ <path d="M773 576L954 570L1094 786" stroke="#efbc85" stroke-width="13" fill="none"/>
+ <path d="M1086 816L1161 795L1218 833L1137 858Z" fill="#8d5d42"/>
+ <g stroke="#242e2d" stroke-width="12" fill="none"><path d="M686 414L638 650M1003 410L1070 666"/><path d="M657 466L1037 453"/></g>
+ <g stroke="#ceb07c" stroke-width="7"><path d="M715 448L715 517M753 441L753 513M793 437L793 510M850 439L850 512M894 436L894 509M938 434L938 506"/></g>
+ <rect x="832" y="364" width="44" height="32" rx="5" fill="#b4c5bb" stroke="#243b3a" stroke-width="6"/>
+</g>
+<!-- blue municipal bench clearly visible at right -->
+<ellipse cx="1312" cy="787" rx="210" ry="28" fill="#0c191d" opacity=".45" filter="url(#shadow)"/>
+<g>
+ <path d="M1171 623L1451 601L1470 700L1190 727Z" fill="url(#bluePaint)" stroke="#102a43" stroke-width="9"/>
+ <path d="M1180 651L1458 630M1185 677L1464 655M1190 703L1468 682" stroke="#79a5bd" stroke-width="8" opacity=".8"/>
+ <path d="M1210 715L1201 826M1433 695L1450 811" stroke="#242e30" stroke-width="24"/>
+ <path d="M1192 826L1242 821M1440 812L1495 807" stroke="#293436" stroke-width="18" stroke-linecap="round"/>
+ <path d="M1194 605L1180 532L1245 527L1260 616M1397 595L1380 515L1445 510L1460 601" fill="none" stroke="#243942" stroke-width="20" stroke-linejoin="round"/>
+ <path d="M1190 552L1242 549M1392 535L1441 530" stroke="#8db3c1" stroke-width="8"/>
+</g>
+<!-- shrubbery and small municipal lamp -->
+<g fill="#35593e"><circle cx="36" cy="755" r="65"/><circle cx="92" cy="773" r="54"/><circle cx="1510" cy="742" r="83"/><circle cx="1562" cy="794" r="72"/></g>
+<g fill="#66835e" opacity=".7"><circle cx="50" cy="724" r="25"/><circle cx="112" cy="742" r="24"/><circle cx="1502" cy="707" r="32"/><circle cx="1544" cy="753" r="26"/></g>
+<path d="M1540 320V605" stroke="#273b42" stroke-width="11"/><path d="M1517 322H1563L1572 339H1508Z" fill="#e6d4ac"/><path d="M1526 341H1555V375H1526Z" fill="#d1be95" opacity=".8"/>
+<!-- inspection details -->
+<g fill="#f2d5a7" font-family="Arial,sans-serif">
+ <text x="54" y="94" font-size="20" letter-spacing="7" opacity=".8">МУНИЦИПАЛЬНАЯ ТЕРРИТОРИЯ</text>
+ <text x="55" y="128" font-size="43" font-weight="bold" letter-spacing="2">ДЕТСКАЯ ПЛОЩАДКА</text>
+ <text x="58" y="162" font-size="17" letter-spacing="4" opacity=".8">ОБЪЕКТ ПРОКУРОРСКОЙ ПРОВЕРКИ</text>
+</g>
+<path d="M50 188H504" stroke="#d8b784" stroke-width="2" opacity=".65"/>
+<!-- cinematic warm evening light -->
+<path d="M0 0H780L522 900H0Z" fill="url(#sunlight)" opacity=".13"/>
+<rect width="1600" height="900" fill="url(#vignette)"/>
+<path d="M0 894L1600 894" stroke="#d3b17a" stroke-opacity=".38" stroke-width="7"/>
+</svg>
