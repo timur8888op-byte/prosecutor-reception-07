@@ -355,7 +355,7 @@ const STARTUP_SLIDES = [
   PROFILE_CARD_PORTRAITS.territorial,
   PROFILE_CARD_PORTRAITS.executive,
 ] as const;
-const PRELOAD_IMAGES = [OFFICE_BG, ...Object.values(PROFILE_BACKGROUNDS), ...Object.values(PROFILE_LOADING_BACKGROUNDS), ...Object.values(PROFILE_PORTRAITS), ...Object.values(PROFILE_CARD_PORTRAITS), ...STARTUP_SLIDES, ADMIN_MAP_SVG, "/manus-storage/playground-inspection-scene.svg"];
+const PRELOAD_IMAGES = [OFFICE_BG, ...Object.values(PROFILE_BACKGROUNDS), ...Object.values(PROFILE_LOADING_BACKGROUNDS), ...Object.values(PROFILE_PORTRAITS), ...Object.values(PROFILE_CARD_PORTRAITS), ...STARTUP_SLIDES, ADMIN_MAP_SVG, "/manus-storage/playground-inspection-scene.svg", "/manus-storage/playground-courtyard.webp"];
 
 export default function Home() {
   const [assetsReady, setAssetsReady] = useState(false);
@@ -966,6 +966,8 @@ export default function Home() {
       ["33", "33-ФЗ «Об общих принципах организации местного самоуправления в единой системе публичной власти»"],
     ].filter(([id]) => playgroundInspectionProgress.laws.includes(id)).map(([, label]) => label);
     const constitutionNames = playgroundInspectionProgress.constitution.map((article) => "ст. " + article);
+    const inspectedObjects = playgroundInspectionProgress.evidence ?? [];
+    const evidenceNames = inspectedObjects.map((id) => ({ swings: 'качели', surface: 'покрытие площадки', bench: 'скамейка' }[id]));
     const reportText = [
       "Обращение: «Травмоопасная детская площадка», улица Пушкина.",
       "Поднадзорный объект: городская администрация. Объект осмотра: муниципальная детская площадка на балансе города.",
@@ -973,6 +975,7 @@ export default function Home() {
       "Качели: отсутствуют одиночные гибкие элементы — ГОСТ Р 52167-2012.",
       "Покрытие: отсутствует ударопоглощающее покрытие — ГОСТ Р ЕН 1177-2013.",
       "Скамейка: синий цвет окраски не является нарушением.",
+      'Фотофиксация: ' + (evidenceNames.join(', ') || 'не указана') + '.',
       "Выбранные федеральные нормы: " + lawNames.join("; "),
       "Конституция РФ: " + (constitutionNames.join(", ") || "не указаны, необязательный этап пропущен") + "."
     ].join(" ");
@@ -1505,7 +1508,7 @@ export default function Home() {
           <footer className="city-map-footer"><span>МОДЕЛЬ ГОРОДСКОЙ ОБСТАНОВКИ · ДЕНЬ {dayNumber}</span><p>Индексы условные: они отражают игровые показатели службы и меняются вместе с решениями игрока. Это не статистика реального города.</p><button onClick={() => setCityMapOpen(false)}>Вернуться в кабинет <ChevronRight size={14}/></button></footer>
         </section>
       </div>}
-      {!folderOpened ? (prosecutorOffice === "territorial" ? <TerritorialOfficeDashboard name={character.name} dayNumber={dayNumber} dateLabel={`${officeCalendarDay} ${officeCalendarMonth} 2026`} clockLabel={officeClockLabel} trust={trust} quality={reputation.quality} reputationLabel={reputationLabel} featureImage="/manus-storage/playground-inspection-scene.svg" inspectionAvailable={playgroundInspectionAvailable} inspectionComplete={currentComplaint?.id === "territorial-playground" && playgroundInspectionProgress.stage === "complete"} onInspections={startPlaygroundInspection} onPersonnel={() => setPersonnelFileOpen(true)} /> : <section className="office-arrival-screen" aria-label="Рабочий кабинет">
+      {!folderOpened ? (prosecutorOffice === "territorial" ? <TerritorialOfficeDashboard name={character.name} dayNumber={dayNumber} dateLabel={`${officeCalendarDay} ${officeCalendarMonth} 2026`} clockLabel={officeClockLabel} trust={trust} quality={reputation.quality} reputationLabel={reputationLabel} featureImage="/manus-storage/playground-courtyard.webp" inspectionAvailable={playgroundInspectionAvailable} inspectionComplete={currentComplaint?.id === "territorial-playground" && playgroundInspectionProgress.stage === "complete"} onInspections={startPlaygroundInspection} onPersonnel={() => setPersonnelFileOpen(true)} /> : <section className="office-arrival-screen" aria-label="Рабочий кабинет">
         <div className="office-arrival-copy"><span className="office-arrival-kicker">РАБОЧИЙ ДЕНЬ · {officeCalendarDay} {officeCalendarMonth} 2026</span><h2>{officeGreeting},<br /><em>{character.name}.</em></h2><p>{officeArrivalMessage}</p><div className="office-arrival-status"><span className="live-dot" /> {location === "reception" ? "ПРИЁМНАЯ ГОТОВА К РАБОТЕ" : "МАРШРУТ ВЫЕЗДНОЙ ПРОВЕРКИ ПОДГОТОВЛЕН"}</div>{location === "reception" && <div className="office-arrival-incoming"><span>НОВЫЕ ЗАЯВЛЕНИЯ</span><strong>{dailyComplaintIds.length}</strong><small>сегодня</small>{carriedComplaintIds.length > 0 && <em>+{carriedComplaintIds.length} перенесено</em>}</div>}</div>
         <button type="button" className="office-arrival-folder" onClick={() => setFolderOpened(true)} aria-label="Открыть папку с входящими материалами"><span className="office-arrival-folder-tab" /><span className="office-arrival-folder-head"><span>{location === "reception" ? "ВХОДЯЩИЕ МАТЕРИАЛЫ" : "ПОЛЕВОЕ ЗАДАНИЕ"}</span><small>{location === "reception" ? "КАНЦЕЛЯРИЯ · 2026" : "ВЫЕЗДНАЯ ГРУППА · 2026"}</small></span><span className="office-arrival-folder-title">{location === "reception" ? "Обращение гражданина" : "Тактическая карта выезда"}</span><span className="office-arrival-folder-number">№ {String(location === "reception" ? complaintIndex + 1 : caseIndex + 1).padStart(3,"0")}</span><span className="office-arrival-folder-action">{location === "inspection" ? "ОТКРЫТЬ КАРТУ" : "ОТКРЫТЬ ПАПКУ"} <ChevronRight size={15} /></span></button>
         <div className="office-arrival-bottom"><span>ПРИЁМНАЯ № 07</span><span>{location === "inspection" ? "НАЖМИТЕ, ЧТОБЫ ОТКРЫТЬ ТАКТИЧЕСКУЮ КАРТУ" : "НАЖМИТЕ НА ПАПКУ, ЧТОБЫ НАЧАТЬ РАБОТУ"}</span><span>СМЕНА {dayNumber} · {officeClockLabel}</span></div>
